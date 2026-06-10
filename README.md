@@ -55,7 +55,7 @@ The platform supports multiple user roles, each with custom dashboards and capab
 
 3. **Start the development server**:
    ```bash
-   npm run dev
+   npx vite --host 127.0.0.1 --port 4173
    ```
 
 4. **Build for production** (optional):
