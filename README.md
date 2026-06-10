@@ -1,19 +1,86 @@
-# V-TEKI Academy Web
+# V-TEKI Center of Excellence (CoE) Platform
 
-Frontend website for the V-TEKI Academy experience, detached from the original Base44 runtime and configured to run as a standard Vite React app.
+Welcome to the **V-TEKI Academy Web Platform** MVP! This repository contains the frontend application for the V-TEKI learning management ecosystem.
 
-## Local run
+Currently, this application is configured to run as a local MVP preview using a browser-local data adapter (LocalStorage) to simulate backend API interactions without requiring an external database.
 
-1. Install dependencies with `npm install`
-2. Start the dev server with `npm run dev`
-3. Build production assets with `npm run build`
+## 🚀 Key Features by Role
 
-## Local data mode
+The platform supports multiple user roles, each with custom dashboards and capabilities:
 
-The app now uses a browser-local adapter in [src/api/appClient.js](</D:/magang/V-TEKI Center of Excellence (CoE)/src/api/appClient.js>) instead of the Base44 SDK. Demo auth and entity data are stored in localStorage so the UI can run without an external backend.
+- **👑 Admin (Academy / Super Admin)**
+  - Manage Programs, Batches, and Assessments.
+  - Approve Registrations and Verify Payments.
+  - Track Attendance and Review Feedback.
+  - Generate and Manage Certificates.
+  
+- **👨‍🏫 Trainer (Instructor)**
+  - View Assigned Classes (Batches).
+  - Record Student Attendance.
+  - Grade Assessments and Give Feedback.
+  - View Class Performance Reports.
 
-Demo accounts:
+- **🏢 Corporate PIC**
+  - Monitor Corporate Participants and Registrations.
+  - View Corporate Invoices and Billing Status.
+  - View Certificate Readiness for their staff.
 
-- `admin@vteki.local` / `admin123`
-- `participant@vteki.local` / `participant123`
-# V-TEKI-Center-of-Excellence
+- **🎓 Participant (Student)**
+  - Browse and Register for Programs.
+  - Access Learning Materials and Take Assessments.
+  - Submit Program Feedback.
+  - Track Progress and Download Certificates.
+
+## 🛠 Tech Stack
+
+- **Framework**: React 18 with Vite
+- **Styling**: Tailwind CSS & Vanilla CSS
+- **UI Components**: Shadcn UI (Radix UI + Lucide Icons)
+- **State Management**: React Query (@tanstack/react-query)
+- **Routing**: React Router DOM
+- **Data Storage**: LocalStorage (MVP Mock Adapter)
+
+## 💻 How to Run Locally
+
+1. **Clone the repository** (if you haven't already):
+   ```bash
+   git clone https://github.com/username/vteki-coe.git
+   cd vteki-coe
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+
+4. **Build for production** (optional):
+   ```bash
+   npm run build
+   ```
+
+## 🔐 Demo Accounts
+
+Use the following credentials to explore the different role perspectives locally:
+
+| Role | Email | Password |
+|------|-------|----------|
+| **Admin** | `admin@vteki.local` | `admin123` |
+| **Trainer** | `trainer@vteki.local` | `trainer123` |
+| **Corporate PIC** | `corporate@vteki.local`| `corporate123` |
+| **Participant** | `participant@vteki.local`| `participant123` |
+
+## 📁 Project Structure
+
+- `/src/pages` - Page components organized by role (`/admin`, `/trainer`, `/corporate`, `/participant`, `/public`).
+- `/src/components` - Shared UI components, layouts, and Shadcn primitives (`/ui`).
+- `/src/api` - The LocalStorage mocked data adapter (`appClient.js`).
+- `/src/domain` - Business logic and entity helpers.
+- `/src/validators` - Form and entity schema validation.
+
+---
+*Built for the V-TEKI Center of Excellence MVP.*
