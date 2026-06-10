@@ -44,8 +44,8 @@ The platform supports multiple user roles, each with custom dashboards and capab
 
 1. **Clone the repository** (if you haven't already):
    ```bash
-   git clone https://github.com/username/vteki-coe.git
-   cd vteki-coe
+   git clone https://github.com/username/V-TEKI-Center-of-Excellence.git
+   cd V-TEKI-Center-of-Excellence
    ```
 
 2. **Install dependencies**:
