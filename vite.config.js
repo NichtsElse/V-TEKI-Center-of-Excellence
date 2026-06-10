@@ -13,11 +13,15 @@ import { defineConfig } from 'vite'
 const srcDir = fileURLToPath(new URL('./src', import.meta.url))
 
 export default defineConfig({
-  logLevel: 'error',
   resolve: {
     alias: {
       '@': path.resolve(srcDir),
     },
   },
   plugins: [react()],
+  server: {
+    host: '127.0.0.1',
+    port: 4173,
+    strictPort: true,
+  },
 })

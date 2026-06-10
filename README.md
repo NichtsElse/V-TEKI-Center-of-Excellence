@@ -1,86 +1,87 @@
 # V-TEKI Center of Excellence (CoE) Platform
 
-Welcome to the **V-TEKI Academy Web Platform** MVP! This repository contains the frontend application for the V-TEKI learning management ecosystem.
+V-TEKI CoE is a local-first MVP frontend for training, certification, attendance, assessment, and corporate reporting flows. The app currently runs with seeded demo data in the browser so you can explore every role without needing a live backend.
 
-Currently, this application is configured to run as a local MVP preview using a browser-local data adapter (LocalStorage) to simulate backend API interactions without requiring an external database.
+## What You Can Do
 
-## 🚀 Key Features by Role
+- Browse public programs, trainers, and certificate verification pages.
+- Sign in as admin, trainer, participant, or corporate PIC.
+- Review batches, attendance, assessments, feedback, invoices, and certificates.
+- Use the demo data immediately after running the app locally.
 
-The platform supports multiple user roles, each with custom dashboards and capabilities:
+## Tech Stack
 
-- **👑 Admin (Academy / Super Admin)**
-  - Manage Programs, Batches, and Assessments.
-  - Approve Registrations and Verify Payments.
-  - Track Attendance and Review Feedback.
-  - Generate and Manage Certificates.
-  
-- **👨‍🏫 Trainer (Instructor)**
-  - View Assigned Classes (Batches).
-  - Record Student Attendance.
-  - Grade Assessments and Give Feedback.
-  - View Class Performance Reports.
+- React 18
+- Vite
+- React Router
+- TanStack Query
+- Tailwind CSS
+- Shadcn UI components
+- LocalStorage demo data adapter
 
-- **🏢 Corporate PIC**
-  - Monitor Corporate Participants and Registrations.
-  - View Corporate Invoices and Billing Status.
-  - View Certificate Readiness for their staff.
+## Run Locally
 
-- **🎓 Participant (Student)**
-  - Browse and Register for Programs.
-  - Access Learning Materials and Take Assessments.
-  - Submit Program Feedback.
-  - Track Progress and Download Certificates.
+1. Open a terminal in the project folder.
+2. Install dependencies:
 
-## 🛠 Tech Stack
+```bash
+npm install
+```
 
-- **Framework**: React 18 with Vite
-- **Styling**: Tailwind CSS & Vanilla CSS
-- **UI Components**: Shadcn UI (Radix UI + Lucide Icons)
-- **State Management**: React Query (@tanstack/react-query)
-- **Routing**: React Router DOM
-- **Data Storage**: LocalStorage (MVP Mock Adapter)
+3. Start the dev server:
 
-## 💻 How to Run Locally
+```bash
+npm run dev
+```
 
-1. **Clone the repository** (if you haven't already):
-   ```bash
-   git clone https://github.com/username/V-TEKI-Center-of-Excellence.git
-   cd V-TEKI-Center-of-Excellence
-   ```
+4. Open the app:
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+```text
+http://127.0.0.1:4173
+```
 
-3. **Start the development server**:
-   ```bash
-   npx vite --host 127.0.0.1 --port 4173
-   ```
+If the port is busy, Vite will stop instead of switching ports because `strictPort` is enabled in `vite.config.js`.
 
-4. **Build for production** (optional):
-   ```bash
-   npm run build
-   ```
+## Build
 
-## 🔐 Demo Accounts
+```bash
+npm run build
+```
 
-Use the following credentials to explore the different role perspectives locally:
+## Demo Accounts
+
+Use these local demo accounts:
 
 | Role | Email | Password |
 |------|-------|----------|
-| **Admin** | `admin@vteki.local` | `admin123` |
-| **Trainer** | `trainer@vteki.local` | `trainer123` |
-| **Corporate PIC** | `corporate@vteki.local`| `corporate123` |
-| **Participant** | `participant@vteki.local`| `participant123` |
+| Admin | `admin@vteki.local` | `admin123` |
+| Trainer | `trainer@vteki.local` | `trainer123` |
+| Corporate PIC | `corporate@vteki.local` | `corporate123` |
+| Participant | `participant@vteki.local` | `participant123` |
 
-## 📁 Project Structure
+## Supabase Mode
 
-- `/src/pages` - Page components organized by role (`/admin`, `/trainer`, `/corporate`, `/participant`, `/public`).
-- `/src/components` - Shared UI components, layouts, and Shadcn primitives (`/ui`).
-- `/src/api` - The LocalStorage mocked data adapter (`appClient.js`).
-- `/src/domain` - Business logic and entity helpers.
-- `/src/validators` - Form and entity schema validation.
+Supabase is disabled by default so the app stays fully usable offline with demo data.
 
----
-*Built for the V-TEKI Center of Excellence MVP.*
+To enable Supabase explicitly:
+
+```env
+VITE_ENABLE_SUPABASE=true
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+## Project Structure
+
+- `src/pages` - role-based pages for public, admin, trainer, corporate, and participant flows.
+- `src/components` - shared UI, layout, and reusable components.
+- `src/api` - local app adapter and data access helpers.
+- `src/domain` - business rules and role/eligibility helpers.
+- `src/lib` - auth, routing, and runtime helpers.
+- `src/validators` - validation utilities and tests.
+
+## Notes
+
+- The app uses local seeded data by default.
+- Demo data is stored in browser LocalStorage.
+- The dev server is configured to run on `127.0.0.1:4173`.
