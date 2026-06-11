@@ -1,5 +1,7 @@
 # V-TEKI Center of Excellence (CoE) Platform
 
+_Last updated: 2026-06-11_
+
 V-TEKI CoE is a local-first MVP frontend for training, certification, attendance, assessment, and corporate reporting flows. The app currently runs with seeded demo data in the browser so you can explore every role without needing a live backend.
 
 ## What You Can Do
@@ -61,7 +63,7 @@ Use these local demo accounts:
 
 ## Supabase Mode
 
-Supabase is disabled by default so the app stays fully usable offline with demo data.
+Supabase is disabled by default so the app stays fully usable offline with demo data. The current MVP target is the browser-local flow, so no backend setup is required for demo use.
 
 To enable Supabase explicitly:
 
@@ -85,3 +87,5 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 - The app uses local seeded data by default.
 - Demo data is stored in browser LocalStorage.
 - The dev server is configured to run on `127.0.0.1:4173`.
+- Admin invoice creation is available from the Payments page.
+- Trainer attendance, certificates, and role dashboards have been aligned with the demo data.

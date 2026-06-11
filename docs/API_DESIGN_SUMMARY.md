@@ -8,9 +8,11 @@ Important side effects: None.
 
 # API Design Summary
 
+_Current note: this is a future backend contract. The live MVP still runs on local demo data and local auth._
+
 ## API Style
 
-Recommended API style:
+Recommended API style for the future backend:
 
 - REST-oriented
 - grouped by business domain
@@ -105,3 +107,9 @@ The API should align with future Supabase RLS expectations:
 - trainer -> assigned records only
 - corporate PIC -> organization records only
 - admin roles -> operational scope
+
+## Current Runtime
+
+- Frontend runs against the local app client, not this API yet.
+- Supabase and Express are still future migration targets.
+- Certificate eligibility stays shared in the frontend domain layer until backend migration starts.

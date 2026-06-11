@@ -1,51 +1,53 @@
 <!--
-Purpose: Define the phased development plan for aligning the current MVP with the V-TEKI reference requirements.
+Purpose: Describe the current development plan for the V-TEKI MVP and the later migration path.
 Who uses it: Engineers, reviewers, and planning sessions.
-Main dependencies: Current codebase, task list, and implementation blueprint.
-Public/main sections: Phase breakdown and immediate next steps.
+Main dependencies: Current React/Vite MVP, local demo data, and future Express.js/Supabase migration ideas.
+Public/main sections: Phase breakdown and current next steps.
 Important side effects: None.
 -->
 
 # Development Plan
 
-## Phase 1: Stabilize Shared Business Rules (✅ COMPLETE)
+_Current note: the live app is a local-first MVP with Supabase disabled by default._
 
-- ✅ extract role mapping into shared domain helpers
-- ✅ extract certificate eligibility into shared domain helpers
-- ✅ reduce business rules inside page components
+## Phase 1: Stabilize Shared Business Rules
 
-## Phase 2: Complete Operational MVP Modules (✅ COMPLETE)
+- completed certificate eligibility logic
+- completed role mapping helpers
+- completed local auth/session flow
 
-- ✅ feedback module MVP
-- ✅ attendance module MVP
-- ✅ assessment module refinement
-- ✅ payment and invoice refinement
+## Phase 2: Complete Operational MVP Modules
 
-## Phase 3: Complete Role Flows (✅ COMPLETE)
+- completed feedback flow
+- completed attendance flow
+- completed assessment flow
+- completed payment and invoice flow
 
-- ✅ participant end-to-end completion flow
-- ✅ trainer operational flow
-- ✅ corporate PIC operational flow
-- ✅ admin operational consistency
+## Phase 3: Complete Role Flows
 
-## Phase 4: Supabase-Ready Alignment (⏳ IN PROGRESS)
+- completed participant flow
+- completed trainer flow
+- completed corporate PIC flow
+- completed admin flow
 
-- ✅ align mock entity shape with target schema
-- ✅ separate domain logic from page logic
-- [ ] define frontend service interfaces for future Express backend
-- [ ] document role matrix and RLS assumptions
+## Phase 4: Demo Stability and Polish
 
-## Phase 5: Backend Migration Path (⏭️ UPCOMING)
+- keep demo auth stable
+- keep seeded data aligned with role pages
+- keep empty states readable
+- keep invoices, certificates, and attendance usable in demo mode
 
-- [ ] introduce Express API routes matching current frontend contract
-- [ ] move authentication to Supabase Auth
-- [ ] move persistence to Supabase PostgreSQL
-- [ ] apply RLS policies
-- [ ] move assets to Supabase Storage
+## Phase 5: Future Migration Path
+
+- define Express.js API routes if the project moves back to a backend
+- move auth to Supabase Auth only if migration resumes
+- move persistence to Supabase PostgreSQL only if migration resumes
+- add RLS only if migration resumes
+- add storage only if migration resumes
 
 ## Immediate Next Steps
 
-1. 🎯 Define and document the Express API interfaces for the frontend backend integration.
-2. 🗄️ Ensure data persistence logic in `appClient.js` can smoothly transition to API calls.
-3. 🔐 Document mapping between local MVP roles and Supabase RLS.
-4. 🚀 Prepare repository for Express backend code setup.
+1. Verify trainer dashboard and attendance flows across all seeded trainers.
+2. Verify admin attendance participant selection end-to-end.
+3. Improve demo data coverage for edge cases and empty states.
+4. Defer bundle splitting until the MVP flow is stable.

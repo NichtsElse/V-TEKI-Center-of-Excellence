@@ -1,12 +1,14 @@
 <!--
-Purpose: Describe the current and recommended project folder structure for the V-TEKI platform.
-Who uses it: Engineers and maintainers organizing future implementation work.
-Main dependencies: Current frontend project layout and planned backend migration path.
+Purpose: Describe the current and recommended folder structure for the V-TEKI platform.
+Who uses it: Engineers and maintainers organizing MVP and future backend work.
+Main dependencies: Current frontend layout and the future Express.js migration path.
 Public/main sections: Current structure, recommended frontend structure, and future backend structure.
 Important side effects: None.
 -->
 
 # Folder Structure
+
+_Current note: this repo is running as a local-first React + Vite MVP with seeded demo data._
 
 ## Current Frontend Structure
 
@@ -14,13 +16,14 @@ Important side effects: None.
 src/
   api/
   components/
-    admin/
     layout/
-    participant/
-    public/
     shared/
     ui/
-  hooks/
+  domain/
+    auth/
+    certificates/
+    trainers/
+    corporate/
   lib/
   pages/
     admin/
@@ -42,11 +45,6 @@ src/
     layout/
     shared/
     ui/
-    public/
-    admin/
-    participant/
-    trainer/
-    corporate/
   domain/
     auth/
     roles/
@@ -58,8 +56,6 @@ src/
     certificates/
   hooks/
   lib/
-    auth/
-    query/
   pages/
     public/
     admin/
@@ -69,7 +65,7 @@ src/
   utils/
 ```
 
-## Recommended Backend Structure
+## Future Backend Structure
 
 ```text
 server/

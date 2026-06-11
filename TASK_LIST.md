@@ -1,6 +1,6 @@
 # Task List
 
-Last updated: 2026-06-10
+Last updated: 2026-06-11
 
 ## Done
 
@@ -35,6 +35,12 @@ Last updated: 2026-06-10
 - [ ] Verify admin attendance participant selection end-to-end
 - [ ] Improve demo data coverage for edge cases
 - [ ] Add more explicit empty states where needed
+
+## Recently Updated
+
+- Trainer attendance blank-page crash fixed
+- Admin invoice creation flow added
+- Participant certificates and admin certificate generation verified
 
 ## Later
 

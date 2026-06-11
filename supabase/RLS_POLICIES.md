@@ -1,5 +1,7 @@
 # Supabase Row Level Security (RLS) Policies
 
+_Current note: this document is a future migration reference. The live MVP currently runs on local demo auth and seeded browser data, so these policies are not active yet._
+
 This document defines the intended Row Level Security (RLS) strategy for the V-TEKI Center of Excellence platform when transitioning to Supabase PostgreSQL.
 
 ## Identity & Authentication
@@ -98,7 +100,7 @@ Role enum: `super_admin`, `academy_admin`, `trainer`, `participant`, `corporate_
 ---
 
 ## Implementation Notes
-To implement this in Supabase, we will create helper functions to check the user's role from the `users_profile` table during policy execution:
+To implement this in Supabase later, we would create helper functions to check the user's role from the `users_profile` table during policy execution:
 
 ```sql
 -- Example helper function

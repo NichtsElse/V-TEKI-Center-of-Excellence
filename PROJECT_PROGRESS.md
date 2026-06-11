@@ -1,6 +1,6 @@
 # Project Progress
 
-Last updated: 2026-06-10
+Last updated: 2026-06-11
 
 ## Current Direction
 
@@ -10,7 +10,7 @@ The project stays on the existing stack:
 - local seeded demo data
 - Supabase disabled by default
 
-The current priority is finishing MVP features before any stack migration.
+The current priority is demo polish and stability on the existing MVP stack before any stack migration.
 
 ## What Is Already Working
 
@@ -27,9 +27,11 @@ The current priority is finishing MVP features before any stack migration.
 - Admin program, batch, attendance, assessment, feedback, and certificate pages
 - Trainer dashboard, batches, attendance, feedback, reports, and assessments pages
 - Corporate dashboard, participants, and invoices pages
+- Admin invoice creation in the Payments page
 - Certificate PDF generation
 - Certificate eligibility logic
 - Mobile public navbar menu
+- Stable local dev server on `127.0.0.1:4173`
 
 ## Recent Fixes
 
@@ -40,14 +42,12 @@ The current priority is finishing MVP features before any stack migration.
 - Fixed participant attendance visibility
 - Fixed certificate generation filters so eligible demo users can generate certificates
 - Fixed trainer identity resolution so trainer dashboards and related views use the correct trainer record
+- Fixed trainer attendance blank-page crash and made the page more defensive
+- Added admin invoice creation flow in the Payments page
 - Updated README and Vite dev config
 
 ## Features Still In Progress
 
-- Participant attendance views can still be polished further
-- Trainer assessment review flow can be refined
-- Trainer feedback/report pages can be tightened up
-- Corporate dashboards can be made more explicit for demo presentation
 - Some generated bundles are still large and can be split later
 
 ## Known Notes
@@ -59,7 +59,7 @@ The current priority is finishing MVP features before any stack migration.
 
 ## Recommended Next Steps
 
-1. Finish trainer assessment and feedback/report polish.
-2. Tighten participant progress and attendance presentation.
-3. Improve corporate dashboard/invoice demo clarity.
+1. Verify trainer dashboard and attendance flows across all seeded trainers.
+2. Verify admin attendance participant selection end-to-end.
+3. Improve demo data coverage for edge cases and empty states.
 4. Optionally add bundle splitting after the MVP flow is stable.

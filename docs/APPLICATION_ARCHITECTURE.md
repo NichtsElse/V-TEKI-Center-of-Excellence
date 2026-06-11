@@ -8,6 +8,8 @@ Important side effects: None.
 
 # Application Architecture
 
+_Current note: the live app is a local-first React + Vite MVP with seeded demo data and Supabase disabled by default._
+
 ## Overview
 
 The application should evolve in three clear layers:
@@ -16,7 +18,7 @@ The application should evolve in three clear layers:
 2. Domain layer
 3. Data access layer
 
-This keeps the current MVP usable while preparing the project for `Express.js + Supabase`.
+This keeps the current MVP usable while leaving room for `Express.js + Supabase` later.
 
 ## Presentation Layer
 
@@ -34,6 +36,7 @@ Current examples:
 
 - `src/pages/*`
 - `src/components/*`
+- `src/api/appClient.js`
 
 Responsibilities:
 
@@ -56,6 +59,7 @@ Current direction:
 
 - `src/domain/auth`
 - `src/domain/certificates`
+- `src/domain/trainers`
 
 Target modules:
 
