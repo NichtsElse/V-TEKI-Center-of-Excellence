@@ -19,7 +19,6 @@ const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#6366f1'];
 export default function TrainerReports() {
   const { user } = useAuth();
 
-  // Get trainer info
   const { data: trainerInfo } = useQuery({
     queryKey: ['trainer-info', user?.id],
     queryFn: async () => {
@@ -28,7 +27,6 @@ export default function TrainerReports() {
     },
   });
 
-  // Get trainer's batches
   const { data: batches = [] } = useQuery({
     queryKey: ['batches-trainer', trainerInfo?.id],
     queryFn: async () => {
@@ -38,31 +36,31 @@ export default function TrainerReports() {
     enabled: !!trainerInfo?.id,
   });
 
-  // Get registrations
   const { data: registrations = [] } = useQuery({
     queryKey: ['registrations'],
     queryFn: () => appClient.entities.Registration.list(),
   });
 
-  // Get assessments
   const { data: assessments = [] } = useQuery({
     queryKey: ['assessments'],
     queryFn: () => appClient.entities.Assessment.list(),
   });
 
-  // Get assessment results
   const { data: results = [] } = useQuery({
     queryKey: ['assessment-results'],
     queryFn: () => appClient.entities.AssessmentResult.list(),
   });
 
-  // Get feedback
   const { data: feedbacks = [] } = useQuery({
     queryKey: ['feedbacks'],
     queryFn: () => appClient.entities.Feedback.list(),
   });
 
-  // Get attendance
+  const { data: attendanceRecords = [] } = useQuery({
+    queryKey: ['attendance-records'],
+    queryFn: () => appClient.entities.AttendanceRecord.list(),
+  });
+
   // Prepare batch performance data
   const batchPerformanceData = batches.map(batch => {
     const batchRegs = registrations.filter(r => r.batch_id === batch.id);
@@ -113,6 +111,17 @@ export default function TrainerReports() {
     ? Math.round(registrations
         .filter(r => batches.some(b => b.id === r.batch_id))
         .reduce((sum, r) => sum + (r.attendance_percentage || 0), 0) / totalParticipants)
+    : 0;
+
+  const trainerAttendanceRecords = attendanceRecords.filter((record) =>
+    batches.some((batch) => batch.id === record.batch_id),
+  );
+  const attendanceLoggedCount = trainerAttendanceRecords.length;
+  const attendanceAverage = trainerAttendanceRecords.length > 0
+    ? Math.round(
+        trainerAttendanceRecords.reduce((sum, record) => sum + (['present', 'late', 'excused'].includes(record.status) ? 1 : 0), 0)
+        / trainerAttendanceRecords.length * 100,
+      )
     : 0;
 
   const batchFeedbacks = feedbacks.filter(f => batches.some(b => b.id === f.batch_id));
@@ -168,6 +177,19 @@ export default function TrainerReports() {
             </div>
             <AlertCircle className="w-8 h-8 text-warning/30" />
           </div>
+        </div>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4 mb-8">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Attendance Logs</p>
+          <p className="mt-2 text-2xl font-bold font-heading">{attendanceLoggedCount}</p>
+          <p className="text-xs text-muted-foreground mt-1">{attendanceAverage}% attendance status logged as present-like</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Trainer</p>
+          <p className="mt-2 text-lg font-semibold font-heading">{trainerInfo?.full_name || user?.full_name || 'Trainer'}</p>
+          <p className="text-xs text-muted-foreground mt-1">{trainerInfo?.expertise || 'Assigned trainer profile'}</p>
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 /**
  * Purpose: Present a trainer-specific dashboard summarizing assigned classes and learner progress.
  * Used by: Trainer route `/trainer/dashboard`.
- * Main dependencies: Local app client, auth context, React Query, shared page header, and stats cards.
+ * Main dependencies: Local app client, auth context, React Query, trainer identity helper, shared page header, and stats cards.
  * Public/main functions: Default `TrainerDashboard` page export.
  * Important side effects: Reads local batch, enrollment, and assessment data scoped to the signed-in trainer.
  */
@@ -13,14 +13,17 @@ import { useAuth } from '@/lib/AuthContext';
 import PageHeader from '@/components/shared/PageHeader';
 import StatsCard from '@/components/shared/StatsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { resolveTrainerRecord } from '@/domain/trainers/identity';
 
 export default function TrainerDashboard() {
   const { user } = useAuth();
   const { data: batches = [] } = useQuery({ queryKey: ['trainer-batches'], queryFn: () => appClient.entities.Batch.list() });
   const { data: registrations = [] } = useQuery({ queryKey: ['trainer-registrations'], queryFn: () => appClient.entities.Registration.list() });
   const { data: assessments = [] } = useQuery({ queryKey: ['trainer-assessments'], queryFn: () => appClient.entities.Assessment.list() });
+  const { data: trainers = [] } = useQuery({ queryKey: ['trainers'], queryFn: () => appClient.entities.Trainer.list() });
 
-  const trainerBatches = batches.filter((batch) => batch.trainer_name === user?.full_name);
+  const trainerInfo = resolveTrainerRecord(user, trainers);
+  const trainerBatches = batches.filter((batch) => batch.trainer_id === trainerInfo?.id);
   const trainerBatchIds = new Set(trainerBatches.map((batch) => batch.id));
   const trainerRegistrations = registrations.filter((registration) => trainerBatchIds.has(registration.batch_id));
   const trainerAssessments = assessments.filter((assessment) => trainerBatchIds.has(assessment.batch_id));
@@ -30,7 +33,7 @@ export default function TrainerDashboard() {
     <div>
       <PageHeader
         title="Trainer Dashboard"
-        subtitle={`Teaching operations and learner readiness for ${user?.full_name || 'trainer'}`}
+        subtitle={`Teaching operations and learner readiness for ${trainerInfo?.full_name || user?.full_name || 'trainer'}`}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">

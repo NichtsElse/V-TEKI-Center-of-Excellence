@@ -1,9 +1,9 @@
 /**
- * Purpose: Review invoice payments and verification status for the local MVP admin flow.
+ * Purpose: Review, create, and verify invoice payments for the local MVP admin flow.
  * Used by: Admin route `/admin/payments`.
  * Main dependencies: Local app client, React Query mutations, shared table components, and shadcn dialog controls.
  * Public/main functions: Default `AdminPayments` page export.
- * Important side effects: Updates local payment verification status and admin notes.
+ * Important side effects: Creates local invoice records, updates payment verification status, and writes admin notes.
  */
 import React, { useState } from 'react';
 import { appClient } from '@/api/appClient';
@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, Loader2, Plus } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import DataTable from '@/components/shared/DataTable';
 import StatusBadge from '@/components/shared/StatusBadge';
@@ -21,15 +21,86 @@ import { useToast } from '@/components/ui/use-toast';
 import { format } from 'date-fns';
 
 export default function AdminPayments() {
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    registration_id: '',
+    invoice_number: '',
+    amount: '',
+    invoice_status: 'issued',
+    status: 'pending',
+    payment_method: 'bank_transfer',
+    payment_reference: '',
+    notes: '',
+  });
   const [selected, setSelected] = useState(null);
   const qc = useQueryClient();
   const { toast } = useToast();
 
   const { data: payments = [], isLoading } = useQuery({ queryKey: ['payments'], queryFn: () => appClient.entities.Payment.list('-created_date') });
+  const { data: registrations = [] } = useQuery({ queryKey: ['registrations'], queryFn: () => appClient.entities.Registration.list() });
   const paidCount = payments.filter((payment) => payment.status === 'paid').length;
   const issuedInvoices = payments.filter((payment) => payment.invoice_status === 'issued').length;
   const totalPaid = payments.filter((payment) => payment.status === 'paid').reduce((sum, payment) => sum + (payment.amount || 0), 0);
+
+  const createMutation = useMutation({
+    mutationFn: async (form) => {
+      const registration = registrations.find((entry) => entry.id === form.registration_id);
+      const amount = Number(form.amount || 0);
+      if (!registration) {
+        throw new Error('Registration is required');
+      }
+      if (!amount || amount <= 0) {
+        throw new Error('Amount must be greater than zero');
+      }
+
+      const invoiceNumber = form.invoice_number || `INV-${new Date().getFullYear()}-${String(payments.length + 1).padStart(4, '0')}`;
+      return appClient.entities.Payment.create({
+        invoice_number: invoiceNumber,
+        registration_id: registration.id,
+        amount,
+        invoice_status: form.invoice_status,
+        status: form.status,
+        payment_method: form.payment_method,
+        payment_reference: form.payment_reference || '-',
+        notes: form.notes || '',
+        participant_name: registration.full_name,
+        participant_email: registration.email,
+        organization_name: registration.organization_name || '',
+        program_name: registration.program_name || '',
+        batch_name: registration.batch_name || '',
+      });
+    },
+    onSuccess: async (payment, form) => {
+      if (form?.registration_id && form?.status) {
+        await appClient.entities.Registration.update(form.registration_id, {
+          payment_status: form.status,
+        });
+      }
+      qc.invalidateQueries({ queryKey: ['payments'] });
+      qc.invalidateQueries({ queryKey: ['registrations'] });
+      setCreateDialogOpen(false);
+      setCreateForm({
+        registration_id: '',
+        invoice_number: '',
+        amount: '',
+        invoice_status: 'issued',
+        status: 'pending',
+        payment_method: 'bank_transfer',
+        payment_reference: '',
+        notes: '',
+      });
+      toast({ title: 'Invoice created successfully' });
+      return payment;
+    },
+    onError: (error) => {
+      toast({
+        title: 'Could not create invoice',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }) => {
@@ -74,7 +145,12 @@ export default function AdminPayments() {
 
   return (
     <div>
-      <PageHeader title="Payments" subtitle={`${payments.length} invoice payment records`} />
+      <PageHeader title="Payments" subtitle={`${payments.length} invoice payment records`}>
+        <Button onClick={() => setCreateDialogOpen(true)} className="bg-secondary hover:bg-secondary/90 text-white">
+          <Plus className="w-4 h-4 mr-2" />
+          Create Invoice
+        </Button>
+      </PageHeader>
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Paid Payments</p>
@@ -93,6 +169,119 @@ export default function AdminPayments() {
         Use this queue to confirm payment proofs, settle invoice status, and unlock the next enrollment steps for each participant or corporate group.
       </div>
       <DataTable columns={columns} data={payments} isLoading={isLoading} emptyMessage="No payments found." />
+
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Invoice</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Registration</Label>
+              <Select value={createForm.registration_id} onValueChange={(value) => setCreateForm({ ...createForm, registration_id: value })}>
+                <SelectTrigger><SelectValue placeholder="Select registration" /></SelectTrigger>
+                <SelectContent>
+                  {registrations.map((registration) => (
+                    <SelectItem key={registration.id} value={registration.id}>
+                      {registration.full_name} - {registration.program_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Invoice Number</Label>
+                <input
+                  value={createForm.invoice_number}
+                  onChange={(e) => setCreateForm({ ...createForm, invoice_number: e.target.value })}
+                  placeholder="Auto-generate if empty"
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <Label>Amount</Label>
+                <input
+                  type="number"
+                  min="0"
+                  value={createForm.amount}
+                  onChange={(e) => setCreateForm({ ...createForm, amount: e.target.value })}
+                  placeholder="3500000"
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Invoice Status</Label>
+                <Select value={createForm.invoice_status} onValueChange={(value) => setCreateForm({ ...createForm, invoice_status: value })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="issued">Issued</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Payment Status</Label>
+                <Select value={createForm.status} onValueChange={(value) => setCreateForm({ ...createForm, status: value })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Payment Method</Label>
+                <Select value={createForm.payment_method} onValueChange={(value) => setCreateForm({ ...createForm, payment_method: value })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                    <SelectItem value="virtual_account">Virtual Account</SelectItem>
+                    <SelectItem value="credit_card">Credit Card</SelectItem>
+                    <SelectItem value="cash">Cash</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Payment Reference</Label>
+                <input
+                  value={createForm.payment_reference}
+                  onChange={(e) => setCreateForm({ ...createForm, payment_reference: e.target.value })}
+                  placeholder="Optional reference"
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Notes</Label>
+              <Textarea
+                value={createForm.notes}
+                onChange={(e) => setCreateForm({ ...createForm, notes: e.target.value })}
+                placeholder="Optional invoice notes"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => createMutation.mutate(createForm)}
+              disabled={createMutation.isPending}
+              className="bg-secondary hover:bg-secondary/90 text-white"
+            >
+              {createMutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>

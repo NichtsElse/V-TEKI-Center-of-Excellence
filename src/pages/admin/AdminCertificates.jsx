@@ -46,15 +46,25 @@ export default function AdminCertificates() {
 
     const batch = batches.find(b => b.id === selectedBatch);
     const program = programs.find(p => p.id === batch?.program_id);
-    const eligible = registrations.filter(r =>
+    if (!batch || !program) {
+      setGenerating(false);
+      toast({ title: 'Batch or program not found', variant: 'destructive' });
+      return;
+    }
+    const eligible = registrations.filter((r) =>
       r.batch_id === selectedBatch &&
-      r.status === 'confirmed' &&
       appClient.isCertificateEligible({
         ...r,
         min_attendance_pct: program?.min_attendance_pct || 80,
       }) &&
-      !r.certificate_id
+      !r.certificate_id,
     );
+
+    if (eligible.length === 0) {
+      setGenerating(false);
+      toast({ title: 'No eligible participants found for this batch' });
+      return;
+    }
 
     const existingCerts = certificates.filter(c => c.program_code === program?.code);
     let counter = existingCerts.length;
@@ -77,6 +87,16 @@ export default function AdminCertificates() {
         verification_status: 'valid',
       });
       await appClient.entities.Registration.update(reg.id, { certificate_id: cert.id });
+      await generateCertificatePDF({
+        ...cert,
+        certificate_number: certNumber,
+        participant_name: reg.full_name,
+        participant_email: reg.email,
+        program_name: program?.name || reg.program_name,
+        batch_name: batch?.name,
+        trainer_name: batch?.trainer_name,
+        score: reg.post_assessment_score,
+      });
     }
 
     setGenerating(false);
@@ -160,7 +180,11 @@ export default function AdminCertificates() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setGenDialogOpen(false)}>Cancel</Button>
-            <Button onClick={generateCertificates} disabled={generating || !selectedBatch} className="bg-secondary hover:bg-secondary/90 text-white">
+            <Button
+              onClick={generateCertificates}
+              disabled={generating || !selectedBatch || !batches.find((batch) => batch.id === selectedBatch)}
+              className="bg-secondary hover:bg-secondary/90 text-white"
+            >
               {generating && <Loader2 className="w-4 h-4 animate-spin mr-2" />} Generate
             </Button>
           </DialogFooter>

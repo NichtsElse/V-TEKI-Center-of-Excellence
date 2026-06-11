@@ -31,6 +31,7 @@ export default function MyPrograms() {
   const feedbackSubmittedCount = registrations.filter(
     (registration) => registration.feedback_submitted || registration.feedback_status === 'submitted',
   ).length;
+  const attendanceVisibleCount = registrations.filter((registration) => (registration.attendance_percentage || 0) > 0).length;
   const averageAttendance = registrations.length > 0
     ? Math.round(registrations.reduce((sum, registration) => sum + (registration.attendance_percentage || 0), 0) / registrations.length)
     : 0;
@@ -52,6 +53,7 @@ export default function MyPrograms() {
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">Avg Attendance</p>
             <p className="mt-2 text-2xl font-bold font-heading">{averageAttendance}%</p>
+            <p className="text-[10px] text-muted-foreground mt-1">{attendanceVisibleCount} enrollments show attendance</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">Certificate Ready</p>
@@ -93,12 +95,12 @@ export default function MyPrograms() {
                     </div>
                   </div>
                   <div className="sm:text-right space-y-2">
-                    {reg.attendance_percentage > 0 && (
-                      <div className="w-32">
-                        <p className="text-[10px] text-muted-foreground">Attendance: {reg.attendance_percentage}%</p>
-                        <Progress value={reg.attendance_percentage} className="h-1.5" />
-                      </div>
-                    )}
+                    <div className="w-32">
+                      <p className="text-[10px] text-muted-foreground">
+                        Attendance: {reg.attendance_percentage || 0}%
+                      </p>
+                      <Progress value={reg.attendance_percentage || 0} className="h-1.5" />
+                    </div>
                     {reg.post_assessment_score != null && (
                       <p className="text-xs text-muted-foreground">Score: <span className="font-medium text-foreground">{reg.post_assessment_score}%</span></p>
                     )}

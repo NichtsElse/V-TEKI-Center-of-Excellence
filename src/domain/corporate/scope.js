@@ -15,6 +15,17 @@ export const resolveCorporateOrganizationName = (user, registrations = [], payme
     return '';
   }
 
+  const corporateUserRegistration = registrations.find(
+    (registration) =>
+      registration.registration_type === 'corporate' &&
+      registration.email?.toLowerCase() === normalizedUserEmail &&
+      registration.organization_name,
+  );
+
+  if (corporateUserRegistration?.organization_name) {
+    return corporateUserRegistration.organization_name;
+  }
+
   const registrationMatch = registrations.find(
     (registration) =>
       registration.registration_type === 'corporate' &&

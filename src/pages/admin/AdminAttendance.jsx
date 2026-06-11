@@ -92,7 +92,7 @@ export default function AdminAttendance() {
         session_title: data.session_title,
       });
 
-      const batchRegsLocal = registrations.filter(r => r.batch_id === data.batch_id && (r.status === 'confirmed' || r.payment_status === 'paid'));
+      const batchRegsLocal = registrations.filter((r) => r.batch_id === data.batch_id);
       
       for (const reg of batchRegsLocal) {
         // Check if record exists
@@ -126,7 +126,7 @@ export default function AdminAttendance() {
   });
 
   const filtered = selectedBatch === 'all' ? attendanceRecords : attendanceRecords.filter(a => a.batch_id === selectedBatch);
-  const batchRegs = form.batch_id ? registrations.filter(r => r.batch_id === form.batch_id) : [];
+  const batchRegs = form.batch_id ? registrations.filter((r) => r.batch_id === form.batch_id) : [];
   const presentLikeCount = filtered.filter((record) => ['present', 'late', 'excused'].includes(record.status)).length;
   const attendanceRate = filtered.length > 0 ? Math.round((presentLikeCount / filtered.length) * 100) : 0;
   const sessionCount = selectedBatch === 'all'
@@ -192,7 +192,9 @@ export default function AdminAttendance() {
             <div><Label>Participant</Label>
               <Select value={form.registration_id} onValueChange={v => setForm({...form, registration_id: v})}>
                 <SelectTrigger><SelectValue placeholder="Select participant" /></SelectTrigger>
-                <SelectContent>{batchRegs.map(r => <SelectItem key={r.id} value={r.id}>{r.full_name}</SelectItem>)}</SelectContent>
+                <SelectContent>
+                  {batchRegs.map(r => <SelectItem key={r.id} value={r.id}>{r.full_name}</SelectItem>)}
+                </SelectContent>
               </Select>
             </div>
             <div><Label>Session Date</Label><Input type="date" value={form.session_date} onChange={e => setForm({...form, session_date: e.target.value})} /></div>

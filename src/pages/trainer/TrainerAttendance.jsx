@@ -18,6 +18,12 @@ import { useToast } from '@/components/ui/use-toast';
 import { format } from 'date-fns';
 import { resolveTrainerRecord } from '@/domain/trainers/identity';
 
+const formatSafeDate = (value) => {
+  if (!value) return '-';
+  const date = new Date(`${value}T00:00`);
+  return Number.isNaN(date.getTime()) ? '-' : format(date, 'MMM d, yyyy');
+};
+
 export default function TrainerAttendance() {
   const { user } = useAuth();
   const [sessionDialogOpen, setSessionDialogOpen] = useState(false);
@@ -64,10 +70,20 @@ export default function TrainerAttendance() {
     queryFn: () => appClient.entities.Registration.list(),
   });
 
+  const trainerBatchIds = new Set(batches.map((batch) => batch.id));
+  const trainerRegistrationIds = new Set(
+    registrations
+      .filter((registration) => trainerBatchIds.has(registration.batch_id))
+      .map((registration) => registration.id),
+  );
+
   const createAttendanceMutation = useMutation({
     mutationFn: async ({ sessionId, marks }) => {
       const session = sessions.find(s => s.id === sessionId);
       const batch = batches.find(b => b.id === session?.batch_id);
+      if (!session || !batch) {
+        throw new Error('Session data is not ready yet');
+      }
       
       // Get registrations for this batch
       const batchRegistrations = registrations.filter(r => r.batch_id === batch?.id);
@@ -101,7 +117,7 @@ export default function TrainerAttendance() {
       }
       
       // Recalculate attendance percentage for this batch
-      const sessionCount = sessions.filter(s => s.batch_id === batch?.id).length;
+      const sessionCount = sessions.filter(s => s.batch_id === batch.id).length;
       for (const reg of batchRegistrations) {
         const registrationRecords = records.filter(
           r => r.registration_id === reg.id && batches.find(b => b.id === r.batch_id)
@@ -122,6 +138,13 @@ export default function TrainerAttendance() {
       setSessionDialogOpen(false);
       setAttendanceMarks({});
       toast({ title: 'Attendance recorded successfully' });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Could not save attendance',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
+      });
     },
   });
 
@@ -168,6 +191,18 @@ export default function TrainerAttendance() {
         subtitle={`${sessions.length} sessions scheduled`}
       />
 
+      {!trainerInfo && (
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+          Trainer profile could not be resolved for this account.
+        </div>
+      )}
+
+      {trainerInfo && batches.length === 0 && (
+        <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          Trainer account found, but no batches are assigned yet.
+        </div>
+      )}
+
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Sessions</p>
@@ -205,7 +240,7 @@ export default function TrainerAttendance() {
                 <div className="flex-1">
                   <h4 className="font-semibold text-sm mb-1">{session.session_title}</h4>
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                    <span>Date: {format(new Date(`${session.session_date}T00:00`), 'MMM d, yyyy')}</span>
+                    <span>Date: {formatSafeDate(session.session_date)}</span>
                     <span>Time: {session.start_time} - {session.end_time}</span>
                     <span>Present: {session.presentCount} / {session.totalExpected}</span>
                   </div>
@@ -233,7 +268,7 @@ export default function TrainerAttendance() {
           <DialogHeader>
             <DialogTitle>{selectedSession?.session_title}</DialogTitle>
             <p className="text-xs text-muted-foreground mt-2">
-              {selectedSession && format(new Date(`${selectedSession.session_date}T00:00`), 'MMM d, yyyy')} - {selectedSession?.start_time} - {selectedSession?.end_time}
+              {selectedSession ? `${formatSafeDate(selectedSession.session_date)} - ${selectedSession?.start_time || '-'} - ${selectedSession?.end_time || '-'}` : '-'}
             </p>
           </DialogHeader>
           {selectedSession && (
@@ -244,7 +279,7 @@ export default function TrainerAttendance() {
 
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {registrations
-                  .filter(r => r.batch_id === selectedSession.batch_id)
+                  .filter(r => r.batch_id === selectedSession.batch_id && trainerRegistrationIds.has(r.id))
                   .sort((a, b) => a.full_name.localeCompare(b.full_name))
                   .map((reg) => (
                     <div key={reg.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition">

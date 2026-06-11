@@ -1,9 +1,9 @@
 /**
- * Purpose: Provide a concise participant home dashboard with current learning status and certificate highlights.
+ * Purpose: Provide a concise participant home dashboard with current learning status, attendance snapshot, and certificate highlights.
  * Used by: Participant route `/participant/dashboard`.
  * Main dependencies: Local app client, React Query, shared stats/status components, and shadcn cards.
  * Public/main functions: Default `ParticipantDashboard` page export.
- * Important side effects: Reads local enrollment and certificate records for the current user.
+ * Important side effects: Reads local enrollment, attendance, and certificate records for the current user.
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -33,10 +33,23 @@ export default function ParticipantDashboard() {
     enabled: !!user?.email,
   });
 
+  const { data: attendanceRecords = [] } = useQuery({
+    queryKey: ['my-attendance-records', user?.email],
+    queryFn: () => appClient.entities.AttendanceRecord.filter({ participant_email: user?.email }),
+    enabled: !!user?.email,
+  });
+
   const enrolled = registrations.filter(r => ['confirmed', 'paid'].includes(r.status));
   const completed = registrations.filter(r => r.completion_status === 'completed');
   const inProgress = registrations.filter(r => r.completion_status === 'in_progress');
   const feedbackSubmitted = registrations.filter((registration) => registration.feedback_submitted || registration.feedback_status === 'submitted');
+  const presentLikeAttendance = attendanceRecords.filter((record) => ['present', 'late', 'excused'].includes(record.status));
+  const recentAttendanceRecords = [...attendanceRecords].sort((left, right) => {
+    const rightDate = new Date(`${right.session_date || ''}T00:00:00`).getTime();
+    const leftDate = new Date(`${left.session_date || ''}T00:00:00`).getTime();
+
+    return rightDate - leftDate;
+  });
   const nextProgram = registrations.find((registration) => registration.status === 'registered' || registration.status === 'paid');
 
   return (
@@ -47,6 +60,7 @@ export default function ParticipantDashboard() {
         <StatsCard title="Enrolled Programs" value={enrolled.length} icon={BookOpen} iconClassName="bg-secondary/10 text-secondary" />
         <StatsCard title="In Progress" value={inProgress.length} icon={TrendingUp} iconClassName="bg-accent/10 text-accent" />
         <StatsCard title="Completed" value={completed.length} icon={FileCheck} iconClassName="bg-success/10 text-success" />
+        <StatsCard title="Attendance Logs" value={attendanceRecords.length} icon={MessageSquare} iconClassName="bg-secondary/10 text-secondary" />
         <StatsCard title="Feedback Sent" value={feedbackSubmitted.length} icon={MessageSquare} iconClassName="bg-accent/10 text-accent" />
         <StatsCard title="Certificates" value={certificates.length} icon={Award} iconClassName="bg-warning/10 text-warning" />
       </div>
@@ -131,6 +145,38 @@ export default function ParticipantDashboard() {
           </CardContent>
         </Card>
       )}
+
+      <Card className="mt-6">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Attendance Summary</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            {presentLikeAttendance.length}/{attendanceRecords.length || 0} attended or excused
+          </p>
+        </CardHeader>
+        <CardContent>
+          {attendanceRecords.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No attendance records yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {recentAttendanceRecords.slice(0, 6).map((record) => (
+                <div key={record.id} className="flex items-center justify-between rounded-lg border border-border p-3">
+                  <div>
+                    <p className="text-sm font-medium">{record.session_title}</p>
+                    <p className="text-xs text-muted-foreground">{record.session_date}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm capitalize">{record.status}</p>
+                    <div className="mt-1 flex justify-end">
+                      <StatusBadge status={record.status} />
+                    </div>
+                    <p className="text-xs text-muted-foreground">{record.join_time} - {record.leave_time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

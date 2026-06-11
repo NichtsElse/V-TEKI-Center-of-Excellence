@@ -107,7 +107,7 @@ export default function TrainerFeedback() {
     <div>
       <PageHeader
         title="Participant Feedback"
-        subtitle={`${feedbacks.length} feedback submissions`}
+        subtitle={`${trainerInfo?.full_name || user?.full_name || 'Trainer'} - ${feedbacks.length} feedback submissions`}
       />
 
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
@@ -124,6 +124,7 @@ export default function TrainerFeedback() {
               ))}
             </div>
           </div>
+          <p className="text-xs text-muted-foreground mt-1">Average trainer score from participant feedback</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Program Rating</p>
@@ -138,6 +139,7 @@ export default function TrainerFeedback() {
               ))}
             </div>
           </div>
+          <p className="text-xs text-muted-foreground mt-1">Average program delivery score</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Satisfaction</p>
@@ -152,6 +154,7 @@ export default function TrainerFeedback() {
               ))}
             </div>
           </div>
+          <p className="text-xs text-muted-foreground mt-1">Overall participant satisfaction</p>
         </div>
       </div>
 

@@ -25,6 +25,7 @@ export default function CorporateDashboard() {
   const corporatePayments = payments.filter((payment) => payment.organization_name === organizationName);
   const readyCertificates = corporateRegistrations.filter((registration) => appClient.isCertificateEligible(registration));
   const totalPaid = corporatePayments.filter((payment) => payment.status === 'paid').reduce((sum, payment) => sum + (payment.amount || 0), 0);
+  const hasOrganizationData = Boolean(organizationName && (corporateRegistrations.length > 0 || corporatePayments.length > 0));
 
   return (
     <div>
@@ -32,6 +33,12 @@ export default function CorporateDashboard() {
         title="Corporate Dashboard"
         subtitle={`Managed participant overview for ${organizationName || 'your organization'}`}
       />
+
+      {!hasOrganizationData && (
+        <div className="mb-6 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+          No corporate records were found for this account yet. The seeded demo data is tied to a matching organization profile.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         <StatsCard title="Participants" value={corporateRegistrations.length} icon={Users} iconClassName="bg-secondary/10 text-secondary" />

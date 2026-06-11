@@ -36,7 +36,9 @@ export default function TrainerBatches() {
     queryKey: ['batches-trainer', trainerInfo?.id],
     queryFn: async () => {
       const allBatches = await appClient.entities.Batch.list();
-      return allBatches.filter(b => b.trainer_id === trainerInfo?.id);
+      return allBatches
+        .filter((batch) => batch.trainer_id === trainerInfo?.id)
+        .sort((left, right) => new Date(left.start_date).getTime() - new Date(right.start_date).getTime());
     },
     enabled: !!trainerInfo?.id,
   });
@@ -87,7 +89,7 @@ export default function TrainerBatches() {
     <div>
       <PageHeader
         title="My Batches"
-        subtitle={`${batches.length} batches assigned`}
+        subtitle={`${batches.length} batches assigned${trainerInfo?.full_name ? ` for ${trainerInfo.full_name}` : ''}`}
       />
 
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
@@ -171,9 +173,15 @@ export default function TrainerBatches() {
       )}
 
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{selectedBatch?.name}</DialogTitle>
+            {selectedBatch && (
+              <p className="text-sm text-muted-foreground">
+                {selectedBatch.program_name || programs.find((p) => p.id === selectedBatch.program_id)?.name || 'Program'}
+                {selectedBatch.trainer_name ? ` • ${selectedBatch.trainer_name}` : ''}
+              </p>
+            )}
           </DialogHeader>
           {selectedBatch && (
             <div className="space-y-6">

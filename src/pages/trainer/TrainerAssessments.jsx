@@ -37,37 +37,33 @@ export default function TrainerAssessments() {
   });
   const trainerInfo = resolveTrainerRecord(user, trainers);
 
-  // Get trainer's batches
   const { data: batches = [] } = useQuery({
     queryKey: ['batches-trainer', trainerInfo?.id],
     queryFn: async () => {
       const allBatches = await appClient.entities.Batch.list();
-      return allBatches.filter(b => b.trainer_id === trainerInfo?.id);
+      return allBatches.filter((b) => b.trainer_id === trainerInfo?.id);
     },
     enabled: !!trainerInfo?.id,
   });
 
-  // Get all assessments for trainer's batches
   const { data: assessments = [] } = useQuery({
     queryKey: ['assessments-trainer', batches],
     queryFn: async () => {
       const allAssessments = await appClient.entities.Assessment.list();
-      return allAssessments.filter(a => batches.some(b => b.id === a.batch_id));
+      return allAssessments.filter((a) => batches.some((b) => b.id === a.batch_id));
     },
     enabled: batches.length > 0,
   });
 
-  // Get all assessment results for trainer's assessments
   const { data: results = [], isLoading } = useQuery({
     queryKey: ['assessment-results-trainer', assessments],
     queryFn: async () => {
       const allResults = await appClient.entities.AssessmentResult.list();
-      return allResults.filter(r => assessments.some(a => a.id === r.assessment_id));
+      return allResults.filter((r) => assessments.some((a) => a.id === r.assessment_id));
     },
     enabled: assessments.length > 0,
   });
 
-  // Get registrations for context
   const { data: registrations = [] } = useQuery({
     queryKey: ['registrations'],
     queryFn: () => appClient.entities.Registration.list(),
@@ -79,16 +75,15 @@ export default function TrainerAssessments() {
         ...data,
         status: 'reviewed',
       });
-      
-      // If post-assessment, update registration
-      const assessment = assessments.find(a => a.id === results.find(r => r.id === resultId)?.assessment_id);
+
+      const assessment = assessments.find((a) => a.id === results.find((r) => r.id === resultId)?.assessment_id);
       if (assessment?.assessment_type === 'post_assessment') {
         await appClient.entities.Registration.update(registrationId, {
           post_assessment_status: 'completed',
           post_assessment_score: data.percentage,
         });
       }
-      
+
       return updated;
     },
     onSuccess: () => {
@@ -111,61 +106,75 @@ export default function TrainerAssessments() {
       toast({ title: 'Please enter a score', variant: 'destructive' });
       return;
     }
-    
-    const registration = registrations.find(r => r.id === selected.registration_id);
+
+    const registration = registrations.find((r) => r.id === selected.registration_id);
     if (!registration) {
       toast({ title: 'Registration not found', variant: 'destructive' });
       return;
     }
+
     updateMutation.mutate({
       resultId: selected.id,
       registrationId: registration.id,
       data: {
-        percentage: parseInt(score) || 0,
-        passed: parseInt(score) >= 70,
+        percentage: parseInt(score, 10) || 0,
+        passed: parseInt(score, 10) >= 70,
         feedback,
       },
     });
   };
 
-  const pendingResults = results.filter(r => r.status !== 'reviewed');
-  const reviewedResults = results.filter(r => r.status === 'reviewed');
+  const pendingResults = results.filter((r) => r.status !== 'reviewed');
+  const reviewedResults = results.filter((r) => r.status === 'reviewed');
+  const trainerName = trainerInfo?.full_name || user?.full_name || 'Trainer';
 
   const columns = [
-    { header: 'Assessment', cell: (r) => {
-      const assess = assessments.find(a => a.id === r.assessment_id);
-      return <span className="font-medium">{assess?.title || 'Unknown'}</span>;
-    }},
-    { header: 'Type', cell: (r) => {
-      const assess = assessments.find(a => a.id === r.assessment_id);
-      return <span className="text-xs capitalize">{assess?.assessment_type?.replace(/_/g, ' ')}</span>;
-    }},
+    {
+      header: 'Assessment',
+      cell: (r) => {
+        const assess = assessments.find((a) => a.id === r.assessment_id);
+        return <span className="font-medium">{assess?.title || 'Unknown'}</span>;
+      },
+    },
+    {
+      header: 'Type',
+      cell: (r) => {
+        const assess = assessments.find((a) => a.id === r.assessment_id);
+        return <span className="text-xs capitalize">{assess?.assessment_type?.replace(/_/g, ' ')}</span>;
+      },
+    },
     { header: 'Participant', accessor: 'participant_email' },
     { header: 'Date', cell: (r) => format(new Date(r.submission_date), 'MMM d, yyyy HH:mm') },
-    { header: 'Score', cell: (r) => (
-      <span className={`font-medium ${r.percentage >= 70 ? 'text-success' : 'text-destructive'}`}>
-        {r.percentage}%
-      </span>
-    )},
+    {
+      header: 'Score',
+      cell: (r) => (
+        <span className={`font-medium ${r.percentage >= 70 ? 'text-success' : 'text-destructive'}`}>
+          {r.percentage}%
+        </span>
+      ),
+    },
     { header: 'Status', cell: (r) => <StatusBadge status={r.status} /> },
-    { header: '', cell: (r) => (
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-8 text-xs"
-        onClick={() => openReview(r)}
-      >
-        <MessageSquare className="w-3.5 h-3.5 mr-1" />
-        Review
-      </Button>
-    )},
+    {
+      header: '',
+      cell: (r) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 text-xs"
+          onClick={() => openReview(r)}
+        >
+          <MessageSquare className="w-3.5 h-3.5 mr-1" />
+          Review
+        </Button>
+      ),
+    },
   ];
 
   return (
     <div>
       <PageHeader
         title="Assessment Reviews"
-        subtitle={`${assessments.length} assessments • ${pendingResults.length} pending review`}
+        subtitle={`${trainerName} - ${assessments.length} assessments, ${pendingResults.length} pending review`}
       />
 
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
@@ -176,10 +185,12 @@ export default function TrainerAssessments() {
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Pending Review</p>
           <p className="mt-2 text-2xl font-bold font-heading text-warning">{pendingResults.length}</p>
+          <p className="text-xs text-muted-foreground mt-1">Need manual scoring</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Reviewed</p>
           <p className="mt-2 text-2xl font-bold font-heading text-success">{reviewedResults.length}</p>
+          <p className="text-xs text-muted-foreground mt-1">Already finalized</p>
         </div>
       </div>
 

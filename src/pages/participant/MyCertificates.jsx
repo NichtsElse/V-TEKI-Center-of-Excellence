@@ -37,8 +37,11 @@ export default function MyCertificates() {
     queryFn: () => appClient.entities.Registration.filter({ email: user?.email }),
     enabled: !!user?.email,
   });
-  const validCertificates = certificates.filter((certificate) => certificate.verification_status === 'valid');
-  const latestCertificate = certificates[0];
+  const sortedCertificates = [...certificates].sort(
+    (left, right) => new Date(right.completion_date || right.created_date || 0).getTime() - new Date(left.completion_date || left.created_date || 0).getTime(),
+  );
+  const validCertificates = sortedCertificates.filter((certificate) => certificate.verification_status === 'valid');
+  const latestCertificate = sortedCertificates[0];
   const eligiblePrograms = registrations.filter((registration) => appClient.isCertificateEligible(registration));
 
   return (
@@ -84,7 +87,7 @@ export default function MyCertificates() {
         </Card>
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">
-          {certificates.map(cert => (
+          {sortedCertificates.map(cert => (
             <Card key={cert.id} className="hover:shadow-md transition-shadow border-success/20">
               <CardContent className="p-5">
                 <div className="flex items-start gap-3">
