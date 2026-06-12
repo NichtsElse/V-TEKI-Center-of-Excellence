@@ -1,9 +1,9 @@
 /**
- * Purpose: Provide a local app adapter so the UI can run without any external backend SDK dependency.
+ * Purpose: Provide the application data/auth adapter with Supabase-backed data access and lightweight localStorage caching.
  * Used by: Auth pages, auth context, public pages, admin pages, and participant pages importing `appClient`.
- * Main dependencies: Browser localStorage and in-memory fallback storage.
+ * Main dependencies: Supabase Auth, Supabase database client, browser localStorage, and in-memory cache storage.
  * Public/main functions: `appClient.auth.*` and `appClient.entities.*` CRUD helpers.
- * Important side effects: Reads/writes localStorage for demo auth state and in-browser entity data.
+ * Important side effects: Reads/writes Supabase auth/session state, localStorage cache state, and cached entity data.
  */
 import { getRoleHomePath } from '@/domain/auth/roleConfig';
 import { isCertificateEligible } from '@/domain/certificates/eligibility';
@@ -40,9 +40,23 @@ const STORAGE_KEYS = {
 };
 
 const SEED_VERSION = '2026-06-08-coe-v11';
+const CACHE_PREFIX = 'vteki.supabase.cache';
 
 const nowIso = () => new Date().toISOString();
 const createId = (prefix) => `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+const getCacheKey = (name) => `${CACHE_PREFIX}.${name}`;
+const getCacheItem = (name) => {
+  const raw = storage.getItem(getCacheKey(name));
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
+const setCacheItem = (name, value) => {
+  storage.setItem(getCacheKey(name), JSON.stringify(value));
+};
 
 const defaultDatabase = {
   Program: [
@@ -230,6 +244,7 @@ const defaultDatabase = {
   Certificate: [
     {
       id: 'cert_demo_001',
+      registration_id: 'reg_demo_001',
       certificate_number: 'VTK-2026-AIBT-000001',
       participant_email: 'participant@vteki.local',
       participant_name: 'Aulia Ramadhan',
@@ -244,6 +259,7 @@ const defaultDatabase = {
     },
     {
       id: 'cert_demo_002',
+      registration_id: 'reg_demo_002',
       certificate_number: 'VTK-2026-DAB-000002',
       participant_email: 'dina.kusuma@example.com',
       participant_name: 'Dina Kusuma',
@@ -258,6 +274,7 @@ const defaultDatabase = {
     },
     {
       id: 'cert_demo_003',
+      registration_id: 'reg_demo_003',
       certificate_number: 'VTK-2026-EDTS-000003',
       participant_email: 'bima.satria@example.com',
       participant_name: 'Bima Satria',
@@ -703,6 +720,181 @@ const defaultDatabase = {
       status: 'published',
       created_date: '2026-08-25T08:00:00.000Z',
     },
+    {
+      id: 'assess_quiz_1',
+      batch_id: 'batch_data_bootcamp_aug',
+      program_id: 'prog_data_bootcamp',
+      assessment_type: 'quiz',
+      title: 'Quiz 1: Data Types',
+      description: 'Quick check on data types and basic terminology.',
+      passing_score: 50,
+      status: 'published',
+      created_date: '2026-08-10T08:00:00.000Z',
+    },
+    {
+      id: 'assess_quiz_2',
+      batch_id: 'batch_data_bootcamp_aug',
+      program_id: 'prog_data_bootcamp',
+      assessment_type: 'quiz',
+      title: 'Quiz 2: Visualization Rules',
+      description: 'Testing knowledge on chart selection and best practices.',
+      passing_score: 50,
+      status: 'published',
+      created_date: '2026-08-15T08:00:00.000Z',
+    },
+    {
+      id: 'assess_quiz_3',
+      batch_id: 'batch_data_bootcamp_aug',
+      program_id: 'prog_data_bootcamp',
+      assessment_type: 'quiz',
+      title: 'Quiz 3: Data Cleaning',
+      description: 'Questions about handling missing or dirty data.',
+      passing_score: 50,
+      status: 'published',
+      created_date: '2026-08-20T08:00:00.000Z',
+    },
+  ],
+  AssessmentQuestion: [
+    {
+      id: 'q1_pre_ai',
+      assessment_id: 'assess_pre_ai',
+      question_text: 'What is the primary benefit of the topics covered in this program?',
+      question_type: 'multiple_choice',
+      options: [
+        { id: 'opt1', text: 'Theoretical knowledge only' },
+        { id: 'opt2', text: 'Practical application and real-world workflow improvement' },
+        { id: 'opt3', text: 'Certification without learning' },
+        { id: 'opt4', text: 'Social networking only' },
+      ],
+      correct_answer: 'opt2',
+      points: 20,
+    },
+    {
+      id: 'q2_pre_ai',
+      assessment_id: 'assess_pre_ai',
+      question_text: 'Which of the following best describes the core learning objective?',
+      question_type: 'multiple_choice',
+      options: [
+        { id: 'opt1', text: 'Random fact memorization' },
+        { id: 'opt2', text: 'Structured skill development and mastery' },
+        { id: 'opt3', text: 'Entertainment value only' },
+        { id: 'opt4', text: 'Corporate espionage techniques' },
+      ],
+      correct_answer: 'opt2',
+      points: 20,
+    },
+    {
+      id: 'q3_pre_ai',
+      assessment_id: 'assess_pre_ai',
+      question_text: 'How would you apply what you learned to your role?',
+      question_type: 'multiple_choice',
+      options: [
+        { id: 'opt1', text: 'Ignore it completely' },
+        { id: 'opt2', text: 'Integrate into workflows and share with team' },
+        { id: 'opt3', text: 'Keep it secret' },
+        { id: 'opt4', text: 'Use only on Mondays' },
+      ],
+      correct_answer: 'opt2',
+      points: 20,
+    },
+    {
+      id: 'q4_pre_ai',
+      assessment_id: 'assess_pre_ai',
+      question_text: 'What is the expected outcome of successful completion?',
+      question_type: 'multiple_choice',
+      options: [
+        { id: 'opt1', text: 'Nothing - just attendance' },
+        { id: 'opt2', text: 'Competency development and readiness to execute' },
+        { id: 'opt3', text: 'Certificate printing only' },
+        { id: 'opt4', text: 'Free refreshments only' },
+      ],
+      correct_answer: 'opt2',
+      points: 20,
+    },
+    {
+      id: 'q5_pre_ai',
+      assessment_id: 'assess_pre_ai',
+      question_text: 'How would you measure success after this program?',
+      question_type: 'multiple_choice',
+      options: [
+        { id: 'opt1', text: 'By the certificate on the wall' },
+        { id: 'opt2', text: 'By tangible improvements in work processes' },
+        { id: 'opt3', text: 'By attendance only' },
+        { id: 'opt4', text: 'Success is not measurable' },
+      ],
+      correct_answer: 'opt2',
+      points: 20,
+    },
+    {
+      id: 'q1_post_data',
+      assessment_id: 'assess_post_data',
+      question_text: 'What is the primary key to building a successful data dashboard?',
+      question_type: 'multiple_choice',
+      options: [
+        { id: 'opt1', text: 'Using as many colors as possible' },
+        { id: 'opt2', text: 'Focusing on actionable insights and clear metrics' },
+        { id: 'opt3', text: 'Adding 3D charts everywhere' },
+        { id: 'opt4', text: 'Making it as complex as possible' },
+      ],
+      correct_answer: 'opt2',
+      points: 50,
+    },
+    {
+      id: 'q2_post_data',
+      assessment_id: 'assess_post_data',
+      question_text: 'How should you treat data anomalies during reporting?',
+      question_type: 'multiple_choice',
+      options: [
+        { id: 'opt1', text: 'Investigate to understand the root cause' },
+        { id: 'opt2', text: 'Delete them immediately' },
+        { id: 'opt3', text: 'Pretend they do not exist' },
+        { id: 'opt4', text: 'Change the numbers manually' },
+      ],
+      correct_answer: 'opt1',
+      points: 50,
+    },
+    {
+      id: 'q1_quiz_1',
+      assessment_id: 'assess_quiz_1',
+      question_text: 'Which data type is best for storing a person\'s age?',
+      question_type: 'multiple_choice',
+      options: [
+        { id: 'opt1', text: 'String' },
+        { id: 'opt2', text: 'Integer' },
+        { id: 'opt3', text: 'Boolean' },
+        { id: 'opt4', text: 'Date' },
+      ],
+      correct_answer: 'opt2',
+      points: 100,
+    },
+    {
+      id: 'q1_quiz_2',
+      assessment_id: 'assess_quiz_2',
+      question_text: 'Which chart is best for showing trends over time?',
+      question_type: 'multiple_choice',
+      options: [
+        { id: 'opt1', text: 'Pie Chart' },
+        { id: 'opt2', text: 'Bar Chart' },
+        { id: 'opt3', text: 'Line Chart' },
+        { id: 'opt4', text: 'Scatter Plot' },
+      ],
+      correct_answer: 'opt3',
+      points: 100,
+    },
+    {
+      id: 'q1_quiz_3',
+      assessment_id: 'assess_quiz_3',
+      question_text: 'What should you usually do with duplicate data rows?',
+      question_type: 'multiple_choice',
+      options: [
+        { id: 'opt1', text: 'Keep them to increase data volume' },
+        { id: 'opt2', text: 'Remove them to ensure accuracy' },
+        { id: 'opt3', text: 'Color them red' },
+        { id: 'opt4', text: 'Multiply them by 2' },
+      ],
+      correct_answer: 'opt2',
+      points: 100,
+    },
   ],
   AssessmentResult: [
     {
@@ -980,6 +1172,13 @@ const tableMap = {
 
 const createEntityApi = (entityName) => {
   const tableName = tableMap[entityName] || entityName.toLowerCase();
+  const cacheName = `entity.${tableName}`;
+
+  const cacheRead = (orderBy) => sortItems(clone(getCacheItem(cacheName) || []), orderBy);
+  const cacheWrite = (value) => setCacheItem(cacheName, value);
+
+  const localRead = (orderBy) => sortItems(clone(getCollection(entityName)), orderBy);
+  const localWrite = (value) => setCollection(entityName, value);
 
   return {
     async list(orderBy) {
@@ -990,67 +1189,99 @@ const createEntityApi = (entityName) => {
           query = query.order(isDesc ? orderBy.slice(1) : orderBy, { ascending: !isDesc });
         }
         const { data, error } = await query;
-        if (error) throw error;
-        return data || [];
+        if (error) {
+          const cached = getCacheItem(cacheName) || [];
+          if (cached.length) return cacheRead(orderBy);
+          throw error;
+        }
+        const next = data || [];
+        cacheWrite(next);
+        if (next.length) return sortItems(clone(next), orderBy);
+        const cached = getCacheItem(cacheName) || [];
+        return cached.length ? cacheRead(orderBy) : next;
       }
-      return sortItems(clone(getCollection(entityName)), orderBy);
+      return localRead(orderBy);
     },
     async filter(filters) {
       if (isSupabaseConfigured()) {
         const { data, error } = await supabase.from(tableName).select('*').match(filters);
-        if (error) throw error;
-        return data || [];
+        if (error) {
+          const cached = getCacheItem(cacheName) || [];
+          const filteredCached = cached.filter((item) => matchesFilter(item, filters));
+          if (filteredCached.length) return clone(filteredCached);
+          throw error;
+        }
+        const next = data || [];
+        cacheWrite(next);
+        if (next.length) return next;
+        const cached = getCacheItem(cacheName) || [];
+        const filteredCached = cached.filter((item) => matchesFilter(item, filters));
+        return filteredCached.length ? clone(filteredCached) : next;
       }
-      return clone(getCollection(entityName).filter((item) => matchesFilter(item, filters)));
+      const localData = getCollection(entityName);
+      return clone(localData.filter((item) => matchesFilter(item, filters)));
     },
     async get(id) {
       if (isSupabaseConfigured()) {
         const { data, error } = await supabase.from(tableName).select('*').eq('id', id).single();
         if (error) {
-          if (error.code === 'PGRST116') return null; // Not found
+          if (error.code === 'PGRST116') {
+            const cached = getCacheItem(cacheName) || [];
+            return clone(cached.find((item) => item.id === id) ?? null);
+          }
           throw error;
+        }
+        if (data) {
+          const cached = getCacheItem(cacheName) || [];
+          const next = cached.filter((item) => item.id !== id).concat([data]);
+          cacheWrite(next);
         }
         return data;
       }
-      return clone(getCollection(entityName).find((item) => item.id === id) ?? null);
+      const localData = getCollection(entityName);
+      return clone(localData.find((item) => item.id === id) ?? null);
     },
     async create(data) {
       if (isSupabaseConfigured()) {
         const { data: record, error } = await supabase.from(tableName).insert(data).select().single();
         if (error) throw error;
+        const cached = getCacheItem(cacheName) || [];
+        cacheWrite([...cached.filter((item) => item.id !== record.id), record]);
         return record;
       }
-      const items = getCollection(entityName);
+      const localData = getCollection(entityName);
       const record = { id: createId(entityName.toLowerCase()), created_date: nowIso(), ...data };
-      items.push(record);
-      setCollection(entityName, items);
+      localWrite([...localData, record]);
       return clone(record);
     },
     async update(id, data) {
       if (isSupabaseConfigured()) {
         const { data: updated, error } = await supabase.from(tableName).update(data).eq('id', id).select().single();
         if (error) throw error;
+        const cached = getCacheItem(cacheName) || [];
+        cacheWrite(cached.map((item) => (item.id === id ? updated : item)));
         return updated;
       }
-      const items = getCollection(entityName);
-      const index = items.findIndex((item) => item.id === id);
+      const localData = getCollection(entityName);
+      const index = localData.findIndex((item) => item.id === id);
       if (index === -1) {
         throw new Error(`${entityName} with id "${id}" not found`);
       }
-      const updated = { ...items[index], ...data, updated_date: nowIso() };
-      items[index] = updated;
-      setCollection(entityName, items);
+      const updated = { ...localData[index], ...data, updated_date: nowIso() };
+      localData[index] = updated;
+      localWrite(localData);
       return clone(updated);
     },
     async delete(id) {
       if (isSupabaseConfigured()) {
         const { error } = await supabase.from(tableName).delete().eq('id', id);
         if (error) throw error;
+        const cached = getCacheItem(cacheName) || [];
+        cacheWrite(cached.filter((item) => item.id !== id));
         return { success: true };
       }
-      const items = getCollection(entityName);
-      const nextItems = items.filter((item) => item.id !== id);
-      setCollection(entityName, nextItems);
+      const localData = getCollection(entityName);
+      localWrite(localData.filter((item) => item.id !== id));
       return { success: true };
     },
   };
@@ -1093,46 +1324,23 @@ const findLocalUserByCredentials = (email, password) => {
 
 const shouldUseLocalDemoAuth = (email) => email.toLowerCase().endsWith('@vteki.local');
 
+const fetchUserProfile = async (userId) => {
+  const { data: profile, error } = await supabase.from('users_profile').select('*').eq('id', userId).maybeSingle();
+  if (error) throw error;
+  return profile;
+};
+
 const auth = {
   async me() {
     const localSession = getSession();
 
-    if (localSession?.user?.email && shouldUseLocalDemoAuth(localSession.user.email)) {
+    if (localSession?.user) {
       return clone(localSession.user);
     }
 
-    if (isSupabaseConfigured()) {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) throw Object.assign(new Error('Authentication required'), { status: 401 });
-      
-      const { data: profile } = await supabase.from('users_profile').select('*').eq('id', user.id).single();
-      return { ...user, ...profile };
-    }
-    const session = getSession();
-    if (!session?.user) {
-      throw Object.assign(new Error('Authentication required'), { status: 401 });
-    }
-    return clone(session.user);
+    throw Object.assign(new Error('Authentication required'), { status: 401 });
   },
   async loginViaEmailPassword(email, password) {
-    if (isSupabaseConfigured()) {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-      if (!error && data?.user) {
-        const { data: profile } = await supabase.from('users_profile').select('*').eq('id', data.user.id).single();
-        return { ...data.user, ...profile };
-      }
-
-      if (shouldUseLocalDemoAuth(email)) {
-        const localUser = findLocalUserByCredentials(email, password);
-        if (localUser) {
-          setSession(localUser);
-          return clone(localUser);
-        }
-      }
-
-      throw new Error(error?.message || 'Invalid email or password');
-    }
     const user = findLocalUserByCredentials(email, password);
     if (!user) {
       throw new Error('Invalid email or password');
@@ -1140,20 +1348,28 @@ const auth = {
     setSession(user);
     return clone(user);
   },
+  async sendEmailOtp(email) {
+    if (!shouldUseLocalDemoAuth(email)) {
+      throw new Error('OTP login is available only for @vteki.local demo accounts');
+    }
+
+    const user = getCollection('User').find((entry) => entry.email?.toLowerCase() === email.toLowerCase());
+    if (!user) {
+      throw new Error('Email not registered');
+    }
+    savePendingUser(user);
+    return { success: true };
+  },
   loginWithProvider(_provider, redirectTo = '/') {
-    // Supabase oauth stub - assumes UI uses standard email/pass for MVP
     const [demoUser] = getCollection('User');
-    setSession(demoUser);
+    if (demoUser) {
+      setSession(demoUser);
+    }
     if (isBrowser) {
       window.location.href = redirectTo;
     }
   },
   async register({ email, password }) {
-    if (isSupabaseConfigured()) {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) throw new Error(error.message);
-      return { success: true };
-    }
     const users = getCollection('User');
     if (users.some((entry) => entry.email?.toLowerCase() === email.toLowerCase())) {
       throw new Error('Email already registered');
@@ -1169,12 +1385,7 @@ const auth = {
     savePendingUser(pendingUser);
     return { success: true };
   },
-  async verifyOtp({ email, otpCode }) {
-    if (isSupabaseConfigured()) {
-      const { data, error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: 'signup' });
-      if (error) throw new Error(error.message);
-      return { access_token: data.session?.access_token };
-    }
+  async verifyOtp({ email, otpCode, type = 'email' }) {
     if (!otpCode || otpCode.length < 6) {
       throw new Error('Invalid verification code');
     }
@@ -1192,18 +1403,16 @@ const auth = {
   setToken() {
     return true;
   },
-  async resendOtp() {
+  async resendOtp(email, type = 'signup') {
+    if (email && !shouldUseLocalDemoAuth(email)) {
+      throw new Error('OTP resend is available only for @vteki.local demo accounts');
+    }
     return { success: true };
   },
   async resetPasswordRequest() {
     return { success: true };
   },
   async resetPassword({ resetToken, newPassword }) {
-    if (isSupabaseConfigured()) {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) throw new Error(error.message);
-      return { success: true };
-    }
     if (!resetToken) {
       throw new Error('Invalid reset token');
     }
@@ -1220,9 +1429,6 @@ const auth = {
   },
   async logout(redirectTo) {
     clearSession();
-    if (isSupabaseConfigured()) {
-      await supabase.auth.signOut();
-    }
     if (redirectTo && isBrowser) {
       window.location.href = redirectTo;
     }

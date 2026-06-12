@@ -1,9 +1,9 @@
 /**
- * Purpose: Render the registration flow for local demo sign-up and OTP confirmation.
+ * Purpose: Render the Supabase registration flow with OTP confirmation.
  * Used by: Public auth route `/register`.
- * Main dependencies: Local app client, shadcn form controls, OTP input, and AuthLayout.
+ * Main dependencies: appClient auth helpers, shadcn form controls, OTP input, and AuthLayout.
  * Public/main functions: Default `Register` page export.
- * Important side effects: Stores a pending user in local storage and creates a local auth session after verification.
+ * Important side effects: Creates a Supabase auth account, sends/resends OTP, and redirects after verification.
  */
 import React, { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -50,7 +50,7 @@ export default function Register() {
     setError("");
     setLoading(true);
     try {
-      const result = await appClient.auth.verifyOtp({ email, otpCode });
+      const result = await appClient.auth.verifyOtp({ email, otpCode, type: 'signup' });
       if (result?.access_token) {
         appClient.auth.setToken(result.access_token);
       }
@@ -65,7 +65,7 @@ export default function Register() {
   const handleResend = async () => {
     setError("");
     try {
-      await appClient.auth.resendOtp(email);
+      await appClient.auth.resendOtp(email, 'signup');
       toast({
         title: "Code sent",
         description: "Use any 6-digit code in this local MVP preview.",
@@ -93,7 +93,7 @@ export default function Register() {
         )}
 
         <div className="mb-4 rounded-xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
-          Demo note: use any 6-digit code to continue in this MVP preview.
+          Supabase will send the verification code to your email after sign-up.
         </div>
 
         <div className="flex justify-center mb-6">
@@ -177,7 +177,7 @@ export default function Register() {
       )}
 
       <div className="mb-4 rounded-xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
-        This registration flow is stored locally for MVP preview. After sign-up, use any 6-digit OTP to continue.
+        The account is created in Supabase and verified by email OTP before access is granted.
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">

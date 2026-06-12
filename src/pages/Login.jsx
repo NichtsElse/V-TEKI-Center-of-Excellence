@@ -1,9 +1,9 @@
 /**
- * Purpose: Render the sign-in screen for local demo access and role-based dashboard entry.
+ * Purpose: Render the manual email/password login screen for local demo accounts.
  * Used by: Public auth route `/login`.
- * Main dependencies: Local app client, shadcn form controls, and AuthLayout.
+ * Main dependencies: appClient auth helpers, shadcn form controls, and AuthLayout.
  * Public/main functions: Default `Login` page export.
- * Important side effects: Creates a local auth session and redirects users to the app.
+ * Important side effects: Creates an auth session and redirects users after successful sign-in.
  */
 import React, { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -28,7 +28,7 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await appClient.auth.loginViaEmailPassword(email, password);
+      await appClient.auth.loginViaEmailPassword(email.trim(), password);
       window.location.href = redirectUrl;
     } catch (err) {
       setError(err.message || "Invalid email or password");
@@ -45,7 +45,7 @@ export default function Login() {
     <AuthLayout
       icon={LogIn}
       title="Welcome back"
-      subtitle="Log in to your account"
+      subtitle="Log in with your email and password"
       footer={
         <>
           Don't have an account?{" "}
@@ -80,12 +80,20 @@ export default function Login() {
       )}
 
       <div className="mb-4 rounded-xl border border-border bg-muted/40 p-4 text-sm">
-        <p className="font-medium mb-2">Demo Accounts</p>
+        <p className="font-medium mb-2">Login flow</p>
+        <div className="space-y-1 text-muted-foreground">
+          <p>Use the local account email and password shown below.</p>
+          <p>Role access follows the local demo account after login.</p>
+        </div>
+      </div>
+
+      <div className="mb-4 rounded-xl border border-border bg-background p-4 text-sm">
+        <p className="font-medium mb-2">Quick access accounts</p>
         <div className="space-y-1 text-muted-foreground">
           <p><span className="font-medium text-foreground">Admin:</span> admin@vteki.local / admin123</p>
-          <p><span className="font-medium text-foreground">Participant:</span> participant@vteki.local / participant123</p>
           <p><span className="font-medium text-foreground">Trainer:</span> trainer@vteki.local / trainer123</p>
           <p><span className="font-medium text-foreground">Corporate PIC:</span> corporate@vteki.local / corporate123</p>
+          <p><span className="font-medium text-foreground">Participant:</span> participant@vteki.local / participant123</p>
         </div>
       </div>
 

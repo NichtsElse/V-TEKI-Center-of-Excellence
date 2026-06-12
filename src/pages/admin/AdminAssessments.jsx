@@ -8,12 +8,13 @@
 import React, { useState } from 'react';
 import { appClient } from '@/api/appClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, Loader2, CheckCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, CheckCircle, List } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import DataTable from '@/components/shared/DataTable';
 import StatusBadge from '@/components/shared/StatusBadge';
@@ -26,6 +27,7 @@ export default function AdminAssessments() {
   const [form, setForm] = useState(emptyAssessment);
   const [editId, setEditId] = useState(null);
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   const { data: assessments = [], isLoading } = useQuery({ queryKey: ['assessments'], queryFn: () => appClient.entities.Assessment.list('-created_date') });
@@ -82,6 +84,7 @@ export default function AdminAssessments() {
             {simulateGradingMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
           </Button>
         )}
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" title="Manage Questions" onClick={(e) => { e.stopPropagation(); navigate(`/admin/assessments/${r.id}/questions`); }}><List className="w-3.5 h-3.5" /></Button>
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); openEdit(r); }}><Pencil className="w-3.5 h-3.5" /></Button>
         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(r.id); }}><Trash2 className="w-3.5 h-3.5" /></Button>
       </div>

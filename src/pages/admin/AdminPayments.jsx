@@ -104,10 +104,16 @@ export default function AdminPayments() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }) => {
-      const updated = await appClient.entities.Payment.update(id, data);
+      // Remove extra property before saving payment
+      const paymentData = { ...data };
+      delete paymentData.registration_status;
+      
+      const updated = await appClient.entities.Payment.update(id, paymentData);
       if (updated.registration_id && data.status) {
         await appClient.entities.Registration.update(updated.registration_id, {
           payment_status: data.status,
+          status: data.registration_status || 'confirmed',
+          enrollment_status: 'confirmed',
         });
       }
       return updated;
@@ -122,6 +128,7 @@ export default function AdminPayments() {
       invoice_status: 'paid',
       verified_date: new Date().toISOString().split('T')[0],
       payment_date: payment.payment_date || new Date().toISOString().split('T')[0],
+      registration_status: 'confirmed', // Explicitly note that registration should be confirmed
     });
     setDialogOpen(true);
   };
@@ -136,7 +143,7 @@ export default function AdminPayments() {
     { header: 'Method', cell: (r) => <span className="text-xs capitalize">{r.payment_method?.replace(/_/g, ' ') || '-'}</span> },
     { header: 'Date', cell: (r) => r.payment_date ? format(new Date(r.payment_date), 'MMM d, yyyy') : '-' },
     { header: 'Payment', cell: (r) => <StatusBadge status={r.status} /> },
-    { header: '', cell: (r) => r.status === 'pending' && (
+    { header: '', cell: (r) => (r.status === 'pending' || r.status === 'pending_verification') && (
       <Button variant="ghost" size="sm" className="h-7 text-xs text-success" onClick={(e) => { e.stopPropagation(); verifyPayment(r); }}>
         <CheckCircle className="w-3.5 h-3.5 mr-1" /> Verify
       </Button>

@@ -14,7 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, MessageSquare } from 'lucide-react';
+import { Loader2, MessageSquare, List } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '@/components/shared/PageHeader';
 import DataTable from '@/components/shared/DataTable';
 import StatusBadge from '@/components/shared/StatusBadge';
@@ -30,6 +31,7 @@ export default function TrainerAssessments() {
   const [feedback, setFeedback] = useState('');
   const qc = useQueryClient();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const { data: trainers = [] } = useQuery({
     queryKey: ['trainers'],
@@ -128,6 +130,29 @@ export default function TrainerAssessments() {
   const reviewedResults = results.filter((r) => r.status === 'reviewed');
   const trainerName = trainerInfo?.full_name || user?.full_name || 'Trainer';
 
+  const assessmentColumns = [
+    { header: 'Assessment Title', cell: (r) => <span className="font-medium">{r.title}</span> },
+    { header: 'Type', cell: (r) => <span className="text-xs capitalize">{r.assessment_type?.replace(/_/g, ' ')}</span> },
+    { header: 'Format', cell: (r) => <span className="text-xs capitalize">{r.question_type?.replace(/_/g, ' ')}</span> },
+    { header: 'Status', cell: (r) => <StatusBadge status={r.status} /> },
+    {
+      header: '',
+      cell: (r) => (
+        <div className="flex justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs text-primary"
+            onClick={() => navigate(`/trainer/assessments/${r.id}/questions`)}
+          >
+            <List className="w-3.5 h-3.5 mr-1" />
+            Manage Questions
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   const columns = [
     {
       header: 'Assessment',
@@ -199,6 +224,16 @@ export default function TrainerAssessments() {
       </div>
 
       <div className="space-y-6">
+        <div>
+          <h3 className="font-semibold mb-3 text-sm">My Assessments</h3>
+          <DataTable
+            columns={assessmentColumns}
+            data={assessments}
+            isLoading={!assessments.length}
+            emptyMessage="No assessments found for your batches."
+          />
+        </div>
+
         {pendingResults.length > 0 && (
           <div>
             <h3 className="font-semibold mb-3 text-sm">Pending Review</h3>

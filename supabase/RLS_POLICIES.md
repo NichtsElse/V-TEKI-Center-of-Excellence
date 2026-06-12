@@ -3,6 +3,7 @@
 _Current note: this document is a future migration reference. The live MVP currently runs on local demo auth and seeded browser data, so these policies are not active yet._
 
 This document defines the intended Row Level Security (RLS) strategy for the V-TEKI Center of Excellence platform when transitioning to Supabase PostgreSQL.
+These notes are guidance only. They still need to be converted into real `CREATE POLICY` SQL before they can be applied in Supabase.
 
 ## Identity & Authentication
 We assume all users are authenticated via Supabase Auth (`auth.users`).
@@ -19,7 +20,7 @@ Role enum: `super_admin`, `academy_admin`, `trainer`, `participant`, `corporate_
 - **SELECT**: 
   - Admin: ALL
   - Trainer: Users enrolled in their batches
-  - Corporate PIC: Users belonging to `auth.uid().organization_id`
+  - Corporate PIC: Users belonging to the same organization
   - Participant: Only `id = auth.uid()`
 - **INSERT/UPDATE/DELETE**: 
   - Admin: ALL
@@ -36,7 +37,7 @@ Role enum: `super_admin`, `academy_admin`, `trainer`, `participant`, `corporate_
 ### 4. `batches`
 - **SELECT**: 
   - Admin: ALL
-  - Trainer: Batches where `trainer_id = auth.uid()`
+  - Trainer: Batches where the current user is the assigned trainer
   - Participant/Corporate PIC/Public: Only batches where `status IN ('open', 'ongoing', 'closed')`
 - **INSERT/UPDATE/DELETE**: Admin only
 
@@ -47,7 +48,7 @@ Role enum: `super_admin`, `academy_admin`, `trainer`, `participant`, `corporate_
 ### 5. `enrollments` (Registrations)
 - **SELECT**:
   - Admin: ALL
-  - Corporate PIC: Where `organization_id = auth.uid().organization_id`
+  - Corporate PIC: Where `organization_id = current user's organization`
   - Participant: Where `participant_id = auth.uid()`
   - Trainer: Where `batch_id` belongs to batches assigned to them
 - **INSERT**: Admin, Corporate PIC (for their org), Participant (for themselves)
@@ -59,7 +60,7 @@ Role enum: `super_admin`, `academy_admin`, `trainer`, `participant`, `corporate_
 ### 6. `invoices` & `payments`
 - **SELECT**:
   - Admin: ALL
-  - Corporate PIC: Where `organization_id = auth.uid().organization_id`
+  - Corporate PIC: Where `organization_id = current user's organization`
   - Participant: Where `registration_id` belongs to them
 - **INSERT/UPDATE**: Admin, or Participant/Corporate PIC for their respective invoices
 - **DELETE**: Admin only
@@ -100,12 +101,31 @@ Role enum: `super_admin`, `academy_admin`, `trainer`, `participant`, `corporate_
 ---
 
 ## Implementation Notes
-To implement this in Supabase later, we would create helper functions to check the user's role from the `users_profile` table during policy execution:
+To implement this in Supabase later, create helper functions that read the current user's profile from `users_profile` during policy execution. Avoid trying to read `organization_id` directly from `auth.uid()` because `auth.uid()` only returns the authenticated user ID.
 
 ```sql
--- Example helper function
+-- Example helper functions
 CREATE OR REPLACE FUNCTION get_user_role()
-RETURNS VARCHAR AS $$
-  SELECT role FROM users_profile WHERE id = auth.uid();
-$$ LANGUAGE sql SECURITY DEFINER;
+RETURNS TEXT
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+AS $$
+  SELECT role
+  FROM users_profile
+  WHERE id = auth.uid()
+  LIMIT 1;
+$$;
+
+CREATE OR REPLACE FUNCTION get_user_org_id()
+RETURNS TEXT
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+AS $$
+  SELECT organization_id
+  FROM users_profile
+  WHERE id = auth.uid()
+  LIMIT 1;
+$$;
 ```

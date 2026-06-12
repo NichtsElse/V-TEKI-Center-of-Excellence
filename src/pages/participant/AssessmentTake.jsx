@@ -59,71 +59,22 @@ export default function AssessmentTake() {
     r => r.email === user?.email && r.program_id === assessment?.program_id
   );
 
-  // Mock questions for demo (in real app, would come from database)
-  const mockQuestions = [
-    {
-      id: 'q1',
-      question: 'What is the primary benefit of the topics covered in this program?',
-      type: 'multiple_choice',
-      options: [
-        { id: 'opt1', text: 'Theoretical knowledge only' },
-        { id: 'opt2', text: 'Practical application and real-world workflow improvement' },
-        { id: 'opt3', text: 'Certification without learning' },
-        { id: 'opt4', text: 'Social networking only' },
-      ],
-      correctAnswer: 'opt2',
-    },
-    {
-      id: 'q2',
-      question: 'Which of the following best describes the core learning objective?',
-      type: 'multiple_choice',
-      options: [
-        { id: 'opt1', text: 'Random fact memorization' },
-        { id: 'opt2', text: 'Structured skill development and mastery' },
-        { id: 'opt3', text: 'Entertainment value only' },
-        { id: 'opt4', text: 'Corporate espionage techniques' },
-      ],
-      correctAnswer: 'opt2',
-    },
-    {
-      id: 'q3',
-      question: 'How would you apply what you learned to your role?',
-      type: 'multiple_choice',
-      options: [
-        { id: 'opt1', text: 'Ignore it completely' },
-        { id: 'opt2', text: 'Integrate into workflows and share with team' },
-        { id: 'opt3', text: 'Keep it secret' },
-        { id: 'opt4', text: 'Use only on Mondays' },
-      ],
-      correctAnswer: 'opt2',
-    },
-    {
-      id: 'q4',
-      question: 'What is the expected outcome of successful completion?',
-      type: 'multiple_choice',
-      options: [
-        { id: 'opt1', text: 'Nothing - just attendance' },
-        { id: 'opt2', text: 'Competency development and readiness to execute' },
-        { id: 'opt3', text: 'Certificate printing only' },
-        { id: 'opt4', text: 'Free refreshments only' },
-      ],
-      correctAnswer: 'opt2',
-    },
-    {
-      id: 'q5',
-      question: 'How would you measure success after this program?',
-      type: 'multiple_choice',
-      options: [
-        { id: 'opt1', text: 'By the certificate on the wall' },
-        { id: 'opt2', text: 'By tangible improvements in work processes' },
-        { id: 'opt3', text: 'By attendance only' },
-        { id: 'opt4', text: 'Success is not measurable' },
-      ],
-      correctAnswer: 'opt2',
-    },
-  ];
+  // Get questions from DB
+  const { data: dbQuestions = [], isLoading: isLoadingQuestions } = useQuery({
+    queryKey: ['assessment-questions', assessmentId],
+    queryFn: () => appClient.entities.AssessmentQuestion.filter({ assessment_id: assessmentId }),
+    enabled: !!assessmentId,
+  });
 
-  const questions = mockQuestions;
+  // Map db questions to UI format
+  const questions = dbQuestions.map(q => ({
+    id: q.id,
+    question: q.question_text,
+    type: q.question_type,
+    options: q.options || [],
+    correctAnswer: q.correct_answer,
+    points: q.points || 20
+  }));
 
   const submitAssessmentMutation = useMutation({
     mutationFn: async () => {
@@ -141,9 +92,9 @@ export default function AssessmentTake() {
         
         answerDetails.push({
           question: q.question,
-          answer: questions.find(qq => qq.id === q.id)?.options.find(o => o.id === userAnswer)?.text || 'Not answered',
+          answer: questions.find(qq => qq.id === q.id)?.options?.find(o => o.id === userAnswer)?.text || 'Not answered',
           is_correct: isCorrect,
-          points_earned: isCorrect ? 20 : 0,
+          points_earned: isCorrect ? q.points : 0,
         });
       });
 
@@ -191,7 +142,7 @@ export default function AssessmentTake() {
     },
   });
 
-  if (isLoading) {
+  if (isLoading || isLoadingQuestions) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -199,10 +150,10 @@ export default function AssessmentTake() {
     );
   }
 
-  if (!assessment || !currentRegistration) {
+  if (!assessment || !currentRegistration || questions.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <p className="text-muted-foreground">Assessment not found or you're not enrolled in this program.</p>
+        <p className="text-muted-foreground">Assessment not found, no questions available, or you're not enrolled.</p>
         <Button onClick={() => navigate('/participant/assessments')}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Assessments

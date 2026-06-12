@@ -1,6 +1,6 @@
 /**
  * Schema Reader Module
- * Reads and parses supabase/schema.sql to extract table definitions,
+ * Reads and parses the active Supabase schema to extract table definitions,
  * columns, types, constraints, and enum values.
  */
 
@@ -152,10 +152,10 @@ function parseTableDefinition(tableBlock) {
 }
 
 /**
- * Read and parse supabase/schema.sql into a SchemaRegistry
+ * Read and parse the active Supabase schema into a SchemaRegistry
  * @returns {Object} SchemaRegistry with structure: { tables: { tableName: { columns: {...} } } }
  */
-function readAndParseSchema(filePath = 'supabase/schema.sql') {
+function readAndParseSchema(filePath = 'supabase/schema_fixed.sql') {
   try {
     // Read the schema file
     const resolvedPath = path.resolve(filePath);
@@ -192,7 +192,7 @@ function readAndParseSchema(filePath = 'supabase/schema.sql') {
  */
 let cachedSchema = null;
 
-function getSchemaRegistry(filePath = 'supabase/schema.sql', forceRefresh = false) {
+function getSchemaRegistry(filePath = 'supabase/schema_fixed.sql', forceRefresh = false) {
   if (cachedSchema && !forceRefresh) {
     return cachedSchema;
   }

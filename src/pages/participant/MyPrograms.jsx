@@ -16,6 +16,8 @@ import PageHeader from '@/components/shared/PageHeader';
 import { BookOpen } from 'lucide-react';
 import { getCertificateEligibilityChecklist } from '@/domain/certificates/eligibility';
 import { getAssessmentLifecycleSummary } from '@/domain/assessments/summary';
+import UploadPaymentDialog from '@/components/shared/UploadPaymentDialog';
+import ParticipantCheckInDialog from '@/components/shared/ParticipantCheckInDialog';
 
 export default function MyPrograms() {
   const { user } = useAuth();
@@ -93,12 +95,32 @@ export default function MyPrograms() {
                       <StatusBadge status={reg.feedback_status || (reg.feedback_submitted ? 'submitted' : 'pending')} />
                       <StatusBadge status={appClient.isCertificateEligible(reg) ? 'eligible' : 'pending'} />
                     </div>
+                    {reg.payment_status === 'pending' || reg.payment_status === 'waiting_payment' ? (
+                      <div className="mt-4">
+                        <UploadPaymentDialog registrationId={reg.id} />
+                      </div>
+                    ) : reg.payment_status === 'pending_verification' ? (
+                      <div className="mt-4">
+                        <p className="text-xs text-muted-foreground italic">Payment pending verification...</p>
+                      </div>
+                    ) : null}
                   </div>
                   <div className="sm:text-right space-y-2">
-                    <div className="w-32">
-                      <p className="text-[10px] text-muted-foreground">
-                        Attendance: {reg.attendance_percentage || 0}%
-                      </p>
+                    <div className="w-32 sm:ml-auto">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-[10px] text-muted-foreground">
+                          Attendance: {reg.attendance_percentage || 0}%
+                        </p>
+                        {reg.status === 'confirmed' && (reg.attendance_percentage || 0) < 100 && (
+                          <ParticipantCheckInDialog 
+                            registrationId={reg.id} 
+                            batchId={reg.batch_id}
+                            currentAttendance={reg.attendance_percentage} 
+                          >
+                            <button className="text-[10px] font-medium text-primary hover:underline">Check-in</button>
+                          </ParticipantCheckInDialog>
+                        )}
+                      </div>
                       <Progress value={reg.attendance_percentage || 0} className="h-1.5" />
                     </div>
                     {reg.post_assessment_score != null && (

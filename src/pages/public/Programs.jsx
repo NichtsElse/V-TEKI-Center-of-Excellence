@@ -25,7 +25,7 @@ export default function Programs() {
 
   const { data: programs = [], isLoading } = useQuery({
     queryKey: ['programs-public'],
-    queryFn: () => appClient.entities.Program.filter({ status: 'published' }),
+    queryFn: () => appClient.entities.Program.list('-created_date'),
   });
 
   const filtered = programs.filter(p => {

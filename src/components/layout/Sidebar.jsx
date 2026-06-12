@@ -30,6 +30,7 @@ const navGroups = {
     { label: 'Feedback', icon: MessageSquare, path: '/admin/feedback' },
     { label: 'Trainers', icon: UserCog, path: '/admin/trainers' },
     { label: 'Users', icon: Shield, path: '/admin/users' },
+    { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
   ],
   super_admin: [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
@@ -43,6 +44,7 @@ const navGroups = {
     { label: 'Feedback', icon: MessageSquare, path: '/admin/feedback' },
     { label: 'Trainers', icon: UserCog, path: '/admin/trainers' },
     { label: 'Users', icon: Shield, path: '/admin/users' },
+    { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
   ],
   academy_admin: [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
@@ -55,6 +57,7 @@ const navGroups = {
     { label: 'Certificates', icon: Award, path: '/admin/certificates' },
     { label: 'Feedback', icon: MessageSquare, path: '/admin/feedback' },
     { label: 'Trainers', icon: UserCog, path: '/admin/trainers' },
+    { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
   ],
   trainer: [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/trainer/dashboard' },
@@ -68,18 +71,21 @@ const navGroups = {
     { label: 'Dashboard', icon: LayoutDashboard, path: '/corporate/dashboard' },
     { label: 'Participants', icon: ClipboardCheck, path: '/corporate/registrations' },
     { label: 'Invoices', icon: CreditCard, path: '/corporate/invoices' },
+    { label: 'Reports', icon: BarChart3, path: '/corporate/reports' },
   ],
   participant: [
     { label: 'My Dashboard', icon: LayoutDashboard, path: '/participant/dashboard' },
     { label: 'My Programs', icon: BookOpen, path: '/participant/programs' },
     { label: 'Assessments', icon: FileCheck, path: '/participant/assessments' },
     { label: 'Certificates', icon: Award, path: '/participant/certificates' },
+    { label: 'My Profile', icon: UserCog, path: '/participant/profile' },
   ],
   user: [
     { label: 'My Dashboard', icon: LayoutDashboard, path: '/participant/dashboard' },
     { label: 'My Programs', icon: BookOpen, path: '/participant/programs' },
     { label: 'Assessments', icon: FileCheck, path: '/participant/assessments' },
     { label: 'Certificates', icon: Award, path: '/participant/certificates' },
+    { label: 'My Profile', icon: UserCog, path: '/participant/profile' },
   ]
 };
 
@@ -88,7 +94,6 @@ export default function Sidebar({ user }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const logoSrc = '/vteki-logo.png';
-
   const role = user?.role || 'participant';
   const items = navGroups[role] || navGroups.participant;
 
@@ -156,6 +161,8 @@ export default function Sidebar({ user }) {
             "text-sidebar-foreground/50 hover:text-red-400 hover:bg-sidebar-accent transition-colors",
             collapsed && "justify-center px-2"
           )}
+
+
         >
           <LogOut className="w-[18px] h-[18px]" />
           {!collapsed && <span>Logout</span>}
@@ -165,7 +172,7 @@ export default function Sidebar({ user }) {
       {/* Collapse toggle - desktop only */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="hidden lg:flex items-center justify-center py-3 border-t border-sidebar-border text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors"
+        className="hidden md:flex items-center justify-center py-3 border-t border-sidebar-border text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors"
       >
         {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
       </button>
@@ -178,7 +185,7 @@ export default function Sidebar({ user }) {
       <Button
         variant="ghost"
         size="icon"
-        className="fixed top-3 left-3 z-50 lg:hidden bg-card shadow-md"
+        className="fixed top-3 left-3 z-50 md:hidden bg-card shadow-md"
         onClick={() => setMobileOpen(!mobileOpen)}
       >
         {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -187,7 +194,7 @@ export default function Sidebar({ user }) {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -196,14 +203,14 @@ export default function Sidebar({ user }) {
       <aside className={cn(
         "fixed top-0 left-0 h-full bg-sidebar z-40 transition-all duration-300 flex flex-col",
         collapsed ? "w-[68px]" : "w-64",
-        mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>
         <NavContent />
       </aside>
 
       {/* Spacer */}
       <div className={cn(
-        "hidden lg:block flex-shrink-0 transition-all duration-300",
+        "hidden md:block flex-shrink-0 transition-all duration-300",
         collapsed ? "w-[68px]" : "w-64"
       )} />
     </>

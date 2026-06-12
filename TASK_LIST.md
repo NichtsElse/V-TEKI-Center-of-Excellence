@@ -4,8 +4,8 @@ Last updated: 2026-06-11
 
 ## Done
 
-- [x] Local demo auth for all roles
-- [x] Supabase disabled by default
+- [x] Local demo auth fallback for preview
+- [x] Supabase OTP login flow
 - [x] Public navbar fixed on mobile
 - [x] Participant dashboard and program progress visible
 - [x] Participant attendance summary visible
@@ -21,11 +21,14 @@ Last updated: 2026-06-11
 - [x] Admin invoice creation flow
 - [x] Participant certificates page end-to-end
 - [x] Admin certificate generation end-to-end
-- [x] README updated
+- [x] README updated for Supabase-first mode
 - [x] Vite dev config adjusted for stable local startup
 
 ## In Progress
 
+- [ ] Import schema and seed into Supabase
+- [ ] Verify Supabase-backed role flows end-to-end
+- [ ] Add and enable RLS policies table by table
 - [ ] Bundle size reduction and code splitting
 
 ## Next Up
@@ -41,9 +44,10 @@ Last updated: 2026-06-11
 - Trainer attendance blank-page crash fixed
 - Admin invoice creation flow added
 - Participant certificates and admin certificate generation verified
+- Supabase schema aligned to current frontend data shape
+- Supabase seed generator added
 
 ## Later
 
-- [ ] Revisit Supabase integration when the MVP demo flow is stable
-- [ ] Add RLS and backend schema only if the project moves back to Supabase mode
+- [ ] Revisit whether local fallback should stay after Supabase rollout stabilizes
 - [ ] Review whether the Vite app should be migrated to a full-stack framework later

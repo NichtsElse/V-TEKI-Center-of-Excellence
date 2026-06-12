@@ -1,7 +1,7 @@
 /**
- * Purpose: Manage client-side auth state for the local app adapter.
+ * Purpose: Manage client-side auth state for the V-TEKI app with local/manual session handling.
  * Used by: `App`, protected routes, layout components, and auth-aware pages.
- * Main dependencies: React context/hooks and the local `appClient` adapter.
+ * Main dependencies: React context/hooks and the app client adapter.
  * Public/main functions: `AuthProvider` and `useAuth`.
  * Important side effects: Reads persisted session state and triggers browser redirects for login/logout flows.
  */

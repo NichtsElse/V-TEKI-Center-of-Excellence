@@ -12,6 +12,8 @@ import { format, differenceInDays } from 'date-fns';
 import { appClient } from '@/api/appClient';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import UploadPaymentDialog from '@/components/shared/UploadPaymentDialog';
+import ParticipantCheckInDialog from '@/components/shared/ParticipantCheckInDialog';
 
 export default function UpcomingBatchCard({ registration, batch, inProgress }) {
   const { data: attendanceRecords = [] } = useQuery({
@@ -128,13 +130,27 @@ export default function UpcomingBatchCard({ registration, batch, inProgress }) {
       )}
 
       {batch.sessions && batch.sessions.length > 0 && (
-        <div className="flex items-center gap-1.5 pt-1 border-t border-border">
-          <Calendar className="w-3 h-3 text-muted-foreground" />
-          <span className="text-[10px] text-muted-foreground">
-            {attendanceRecords.length > 0
-              ? `${attendanceRecords.length}/${batch.sessions.length} attendance records logged`
-              : `${batch.sessions.length} sessions scheduled`}
-          </span>
+        <div className="flex items-center justify-between pt-1 border-t border-border">
+          <div className="flex items-center gap-1.5">
+            <Calendar className="w-3 h-3 text-muted-foreground" />
+            <span className="text-[10px] text-muted-foreground">
+              {attendanceRecords.length > 0
+                ? `${attendanceRecords.length}/${batch.sessions.length} attendance records logged`
+                : `${batch.sessions.length} sessions scheduled`}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            {(registration.payment_status === 'pending' || registration.payment_status === 'waiting_payment') && (
+              <UploadPaymentDialog registrationId={registration.id} />
+            )}
+            {registration.status === 'confirmed' && (registration.attendance_percentage || 0) < 100 && (
+              <ParticipantCheckInDialog 
+                registrationId={registration.id} 
+                batchId={batch.id} 
+                currentAttendance={registration.attendance_percentage}
+              />
+            )}
+          </div>
         </div>
       )}
     </div>

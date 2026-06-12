@@ -1,20 +1,21 @@
 # Supabase Integration Status
 
 **Date**: June 11, 2026
-**Current Mode**: Local-first MVP
-**Status**: Disabled by default for the demo flow
+**Current Mode**: Supabase-first MVP with local fallback preview
+**Status**: Schema aligned, seed prepared, OTP auth implemented; RLS next
 
 ## Current Setup
 
 - `src/lib/supabase.js` exists and can create a Supabase client.
 - `isSupabaseConfigured()` guards Supabase access in the app client.
-- The current MVP does not require Supabase to run.
-- Local demo auth and LocalStorage-backed data are the default path.
+- Supabase is the primary backend path when enabled.
+- Local fallback data still exists for offline preview.
+- Supabase schema matches the frontend data shape and the seed file is aligned to the current demo dataset.
 
 ## What Is Active In The Demo
 
-- Browser-local authentication
-- Browser-local seeded data
+- Supabase email OTP authentication
+- Supabase-backed seeded data when enabled
 - Role-based UI and routing
 - Certificate eligibility logic
 - Certificate PDF generation
@@ -22,32 +23,29 @@
 
 ## What Is Not Active In The Demo
 
-- Supabase database access
-- Supabase Auth
 - RLS policies
 - Express.js backend routes
 - Cloud persistence
 
 ## Future Migration Notes
 
-If the project returns to Supabase later, the next steps are:
+Current migration order:
 
-1. Create the database schema.
-2. Migrate auth to Supabase Auth.
-3. Add RLS policies.
-4. Move CRUD calls from local storage to backend-backed APIs.
-5. Re-test the demo flows end to end.
+1. Import `supabase/schema_fixed.sql`.
+2. Import `supabase/seed_fixed.sql`.
+3. Verify all role pages against Supabase.
+4. Add and enable RLS policies table by table.
 
 ## Summary
 
 | Item | Status | Notes |
 |------|--------|-------|
 | Supabase Client Support | Ready | Optional future path |
-| Current Demo Mode | Active | LocalStorage-backed |
-| Authentication | Local demo | Works without backend |
-| Database Schema | Not active | Not required for current demo |
-| RLS Policies | Not active | Future migration item |
+| Current Demo Mode | Available | Local fallback only |
+| Authentication | Supabase OTP | Primary path |
+| Database Schema | Ready | Import `schema_fixed.sql` |
+| RLS Policies | Not active | Enable after role verification |
 
-**Current Status**: Local-first MVP  
-**Supabase**: Disabled by default  
-**Migration**: Deferred until the demo flow is stable
+**Current Status**: Supabase-first MVP  
+**Supabase**: Enabled via env flag  
+**Migration**: In progress

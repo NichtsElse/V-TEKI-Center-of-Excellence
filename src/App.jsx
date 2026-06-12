@@ -35,18 +35,22 @@ import AdminPrograms from '@/pages/admin/AdminPrograms';
 import AdminBatches from '@/pages/admin/AdminBatches';
 import AdminRegistrations from '@/pages/admin/AdminRegistrations';
 import AdminPayments from '@/pages/admin/AdminPayments';
+
 import AdminCertificates from '@/pages/admin/AdminCertificates';
 import AdminTrainers from '@/pages/admin/AdminTrainers';
 import AdminAttendance from '@/pages/admin/AdminAttendance';
 import AdminAssessments from '@/pages/admin/AdminAssessments';
+import AdminAssessmentQuestions from '@/pages/admin/AdminAssessmentQuestions';
 import AdminFeedback from '@/pages/admin/AdminFeedback';
 import AdminUsers from '@/pages/admin/AdminUsers';
 import BatchDetail from '@/pages/admin/BatchDetail';
+import AdminReports from '@/pages/admin/AdminReports';
 // Participant pages
 import StudentDashboard from '@/pages/participant/StudentDashboard';
 import MyPrograms from '@/pages/participant/MyPrograms';
 import MyAssessments from '@/pages/participant/MyAssessments';
 import MyCertificates from '@/pages/participant/MyCertificates';
+import Profile from '@/pages/participant/Profile';
 import TrainerDashboard from '@/pages/trainer/TrainerDashboard';
 import TrainerAssessments from '@/pages/trainer/TrainerAssessments';
 import TrainerAttendance from '@/pages/trainer/TrainerAttendance';
@@ -58,6 +62,7 @@ import FeedbackSubmit from '@/pages/participant/FeedbackSubmit';
 import CorporateDashboard from '@/pages/corporate/CorporateDashboard';
 import CorporateParticipants from '@/pages/corporate/CorporateParticipants';
 import CorporateInvoices from '@/pages/corporate/CorporateInvoices';
+import CorporateReports from '@/pages/corporate/CorporateReports';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -110,15 +115,17 @@ const AuthenticatedApp = () => {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/programs" element={<AdminPrograms />} />
             <Route path="/admin/batches" element={<AdminBatches />} />
+            <Route path="/admin/batches/:batchId" element={<BatchDetail />} />
             <Route path="/admin/registrations" element={<AdminRegistrations />} />
             <Route path="/admin/payments" element={<AdminPayments />} />
             <Route path="/admin/certificates" element={<AdminCertificates />} />
             <Route path="/admin/trainers" element={<AdminTrainers />} />
             <Route path="/admin/attendance" element={<AdminAttendance />} />
             <Route path="/admin/assessments" element={<AdminAssessments />} />
+            <Route path="/admin/assessments/:assessmentId/questions" element={<AdminAssessmentQuestions />} />
             <Route path="/admin/feedback" element={<AdminFeedback />} />
             <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/batches/:batchId" element={<BatchDetail />} />
+            <Route path="/admin/reports" element={<AdminReports />} />
           </Route>
           {/* Participant routes */}
           <Route element={<ProtectedRoute allowedRoles={['participant', 'user']} />}>
@@ -128,6 +135,7 @@ const AuthenticatedApp = () => {
             <Route path="/participant/assessments/:assessmentId/take" element={<AssessmentTake />} />
             <Route path="/participant/certificates" element={<MyCertificates />} />
             <Route path="/participant/feedback/:enrollmentId" element={<FeedbackSubmit />} />
+            <Route path="/participant/profile" element={<Profile />} />
           </Route>
           {/* Trainer routes */}
           <Route element={<ProtectedRoute allowedRoles={['trainer']} />}>
@@ -135,6 +143,7 @@ const AuthenticatedApp = () => {
             <Route path="/trainer/batches" element={<TrainerBatches />} />
             <Route path="/trainer/attendance" element={<TrainerAttendance />} />
             <Route path="/trainer/assessments" element={<TrainerAssessments />} />
+            <Route path="/trainer/assessments/:assessmentId/questions" element={<AdminAssessmentQuestions />} />
             <Route path="/trainer/feedback" element={<TrainerFeedback />} />
             <Route path="/trainer/reports" element={<TrainerReports />} />
           </Route>
@@ -143,18 +152,16 @@ const AuthenticatedApp = () => {
             <Route path="/corporate/dashboard" element={<CorporateDashboard />} />
             <Route path="/corporate/registrations" element={<CorporateParticipants />} />
             <Route path="/corporate/invoices" element={<CorporateInvoices />} />
+            <Route path="/corporate/reports" element={<CorporateReports />} />
           </Route>
         </Route>
       </Route>
-
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 };
 
-
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>

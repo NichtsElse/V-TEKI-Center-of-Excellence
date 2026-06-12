@@ -4,13 +4,14 @@ Last updated: 2026-06-11
 
 ## Current Direction
 
-The project stays on the existing stack:
+The project stays on the existing frontend stack, while Supabase is now the primary backend target:
 
 - React + Vite
-- local seeded demo data
-- Supabase disabled by default
+- local seeded demo data as fallback preview
+- Supabase enabled through env flags
+- Supabase schema and seed data aligned to the current frontend data shape
 
-The current priority is demo polish and stability on the existing MVP stack before any stack migration.
+The current priority is to finish the Supabase migration without breaking the role UX.
 
 ## What Is Already Working
 
@@ -20,7 +21,7 @@ The current priority is demo polish and stability on the existing MVP stack befo
   - trainer
   - participant
   - corporate PIC
-- Local demo auth/session flow
+- Supabase OTP auth flow
 - Role-based routing and protected pages
 - Local seeded database in `src/api/appClient.js`
 - Participant dashboards and program progress
@@ -35,8 +36,8 @@ The current priority is demo polish and stability on the existing MVP stack befo
 
 ## Recent Fixes
 
-- Disabled Supabase by default so demo data is the main source for the MVP
-- Fixed local demo auth fallback for `@vteki.local` accounts
+- Added Supabase OTP login flow
+- Kept local fallback preview for `@vteki.local` accounts
 - Fixed public navbar visibility on mobile
 - Fixed corporate pages so they resolve organization scope from demo data
 - Fixed participant attendance visibility
@@ -44,22 +45,25 @@ The current priority is demo polish and stability on the existing MVP stack befo
 - Fixed trainer identity resolution so trainer dashboards and related views use the correct trainer record
 - Fixed trainer attendance blank-page crash and made the page more defensive
 - Added admin invoice creation flow in the Payments page
+- Aligned Supabase schema to the current frontend field names and IDs
+- Generated a Supabase seed file from the current demo dataset
 - Updated README and Vite dev config
 
 ## Features Still In Progress
 
 - Some generated bundles are still large and can be split later
+- RLS still needs to be enabled table by table after role verification
 
 ## Known Notes
 
-- Supabase exists in the codebase, but it is off by default.
-- Demo data is stored in browser LocalStorage.
+- Supabase exists in the codebase and is the primary auth/data path when enabled.
+- Local demo data is retained only as fallback preview.
 - The dev server is pinned to `127.0.0.1:4173`.
 - Build works, but Vite warns that the main bundle is large.
 
 ## Recommended Next Steps
 
-1. Verify trainer dashboard and attendance flows across all seeded trainers.
-2. Verify admin attendance participant selection end-to-end.
-3. Improve demo data coverage for edge cases and empty states.
-4. Optionally add bundle splitting after the MVP flow is stable.
+1. Import the new schema and seed into Supabase.
+2. Verify trainer dashboard, attendance, and invoice flows against Supabase.
+3. Enable RLS table by table after role verification.
+4. Keep bundle splitting as a later optimization.

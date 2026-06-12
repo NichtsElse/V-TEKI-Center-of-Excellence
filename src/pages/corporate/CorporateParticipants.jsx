@@ -13,6 +13,7 @@ import PageHeader from '@/components/shared/PageHeader';
 import DataTable from '@/components/shared/DataTable';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { resolveCorporateOrganizationName } from '@/domain/corporate/scope';
+import RegisterEmployeesDialog from '@/components/corporate/RegisterEmployeesDialog';
 
 export default function CorporateParticipants() {
   const { user } = useAuth();
@@ -34,7 +35,9 @@ export default function CorporateParticipants() {
 
   return (
     <div>
-      <PageHeader title="Corporate Participants" subtitle={`${filtered.length} managed enrollments`} />
+      <PageHeader title="Corporate Participants" subtitle={`${filtered.length} managed enrollments`}>
+        <RegisterEmployeesDialog />
+      </PageHeader>
       <DataTable columns={columns} data={filtered} isLoading={isLoading} emptyMessage="No corporate participant records found." />
     </div>
   );

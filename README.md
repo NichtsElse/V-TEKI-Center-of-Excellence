@@ -2,7 +2,7 @@
 
 _Last updated: 2026-06-11_
 
-V-TEKI CoE is a local-first MVP frontend for training, certification, attendance, assessment, and corporate reporting flows. The app currently runs with seeded demo data in the browser so you can explore every role without needing a live backend.
+V-TEKI CoE is a Supabase-first MVP frontend for training, certification, attendance, assessment, and corporate reporting flows. The app now expects Supabase for auth and data when enabled, while still keeping a local fallback for offline preview.
 
 ## What You Can Do
 
@@ -19,7 +19,8 @@ V-TEKI CoE is a local-first MVP frontend for training, certification, attendance
 - TanStack Query
 - Tailwind CSS
 - Shadcn UI components
-- LocalStorage demo data adapter
+- Supabase Auth and Postgres adapter
+- LocalStorage fallback adapter for offline preview
 
 ## Run Locally
 
@@ -50,20 +51,13 @@ If the port is busy, Vite will stop instead of switching ports because `strictPo
 npm run build
 ```
 
-## Demo Accounts
+## Auth
 
-Use these local demo accounts:
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | `admin@vteki.local` | `admin123` |
-| Trainer | `trainer@vteki.local` | `trainer123` |
-| Corporate PIC | `corporate@vteki.local` | `corporate123` |
-| Participant | `participant@vteki.local` | `participant123` |
+Primary login now uses Supabase email OTP. The local demo accounts remain only as fallback preview data when Supabase is disabled.
 
 ## Supabase Mode
 
-Supabase is disabled by default so the app stays fully usable offline with demo data. The current MVP target is the browser-local flow, so no backend setup is required for demo use.
+Enable Supabase to use the real auth and database flow:
 
 To enable Supabase explicitly:
 
@@ -82,10 +76,8 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 - `src/lib` - auth, routing, and runtime helpers.
 - `src/validators` - validation utilities and tests.
 
-## Notes
-
-- The app uses local seeded data by default.
-- Demo data is stored in browser LocalStorage.
+- The app uses Supabase when `VITE_ENABLE_SUPABASE=true`.
+- Demo data remains available as a fallback preview path.
 - The dev server is configured to run on `127.0.0.1:4173`.
 - Admin invoice creation is available from the Payments page.
 - Trainer attendance, certificates, and role dashboards have been aligned with the demo data.
